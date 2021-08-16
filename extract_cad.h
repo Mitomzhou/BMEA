@@ -30,8 +30,22 @@ geometry::PlaneSet replaceMergePoints(std::vector<std::pair<int,int>>& mergeTupl
 /* 获取外轮廓 */
 geometry::Contour connectContour(geometry::PlaneSet layerps);
 
+/* 替换contour中link点, 和同层面中替换聚类中点有所不同，同层面涉及面的构成问题，而link中不存在，直接去重就可以了 */
+geometry::Contour replaceLinkPoint(std::vector<std::pair<int,int>>& verticalMergeTuples, geometry::Contour& allContour);
+
+/**
+ * 提取cad的主体函数
+ * @param height_v
+ * @param pc
+ * @param ps
+ */
 void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::PlaneSet& ps)
 {
+    // 所有层的contour
+    geometry::Contour allContour;
+    // 所有层的点(同层平面点是替换过的)
+    std::vector<int> allPoints;
+
     std::vector<std::vector<int>> allLayerPointsIndex;
     std::vector<double> zcol = pc.getZCol();
     for (int i=0; i<height_v.size(); i++) {
@@ -73,15 +87,40 @@ void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::
 
         std::vector<std::pair<int,int>> mergeTuples =  mergePoint(contriLayerPoints, pc, 0.1);
 
-
+        // 单层面聚类点并替换后的面
         geometry::PlaneSet layerps = replaceMergePoints(mergeTuples, layerPlanesIndex, ps);
 
         // 得到单层轮廓线
-        connectContour(layerps);
+        geometry::Contour contour = connectContour(layerps);
 
+        for (auto link : contour.getLinks()){
+            allContour.addLink(link);
+        }
+        for (auto plane : layerps.getPlaneSet()){
+            for(auto point : plane.getPointsIndex()){
+                allPoints.push_back(point);
+            }
+        }
+    }
+
+    // 得到所有层的点替换关系
+    std::vector<std::pair<int,int>> verticalMergeTuples =  util::doUnique_pairv(mergePoint(allPoints, pc, 1));
+
+    std::cout << "所有点垂直替换关系" << verticalMergeTuples.size() << std::endl;
+    for (auto t : verticalMergeTuples){
+        std::cout << "(" << t.first << "," << t.second << ")" << " ";
+    }
+
+    // TODO 检查
+    geometry::Contour result = replaceLinkPoint(verticalMergeTuples, allContour);
+
+    std::cout << std::endl << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    for (auto t : result.getLinks()){
+        std::cout << "(" << t.first << "," << t.second << ")" << " ";
     }
 
 }
+
 
 /**
  * 合并点函数, 对于同层
@@ -202,6 +241,29 @@ geometry::Contour connectContour(geometry::PlaneSet layerps)
     geometry::Contour resultContour(util::doUnique_pairv(contour.getLinks()));
     resultContour.print();
     return resultContour;
+}
+
+/**
+ * 替换所有contour中的点
+ * @param verticalMergeTuples
+ * @param allContour
+ * @return
+ */
+geometry::Contour replaceLinkPoint(std::vector<std::pair<int,int>>& verticalMergeTuples, geometry::Contour& allContour)
+{
+    for (int i=0; i<allContour.getLinks().size(); i++){
+        for (int j=0; j<verticalMergeTuples.size(); j++){
+            if(verticalMergeTuples[j].second == allContour.getLinks()[i].first){
+                allContour.getLinks()[i].first = verticalMergeTuples[j].first;
+            }
+            if(verticalMergeTuples[j].second == allContour.getLinks()[i].second){
+                allContour.getLinks()[i].second = verticalMergeTuples[j].first;
+            }
+        }
+    }
+    return allContour;
+    // TODO 去重
+
 }
 
 

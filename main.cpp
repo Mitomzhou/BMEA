@@ -56,6 +56,15 @@ void test()
 //    for (auto a : v) std::cout << a << " ";
 //    cout << util::contain_i(v, 9);
 
+    std::vector<std::pair<int, int>> vp;
+    vp.push_back(std::make_pair(10,100));
+    for(auto p : vp){
+        p.first = 1000000;
+    }
+    for(auto p : vp){
+        cout << p.first << endl;
+    }
+
 }
 
 int main() {

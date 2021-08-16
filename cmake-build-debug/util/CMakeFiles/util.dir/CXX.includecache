@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/mitom/Music/BMEA/util/defines.h
+/home/mitom/Music/clion_workspace/BMEA/util/defines.h
 boost/algorithm/string.hpp
 -
 regex
@@ -24,11 +24,19 @@ vector
 algorithm
 -
 
-/home/mitom/Music/BMEA/util/math.cpp
+/home/mitom/Music/clion_workspace/BMEA/util/math.cpp
 math.h
 -
 math.h
-/home/mitom/Music/BMEA/util/math.h
+/home/mitom/Music/clion_workspace/BMEA/util/math.h
 defines.h
-/home/mitom/Music/BMEA/util/defines.h
+/home/mitom/Music/clion_workspace/BMEA/util/defines.h
+
+/home/mitom/Music/clion_workspace/BMEA/util/string_util.cpp
+string_util.h
+/home/mitom/Music/clion_workspace/BMEA/util/string_util.h
+
+/home/mitom/Music/clion_workspace/BMEA/util/string_util.h
+defines.h
+/home/mitom/Music/clion_workspace/BMEA/util/defines.h
 
