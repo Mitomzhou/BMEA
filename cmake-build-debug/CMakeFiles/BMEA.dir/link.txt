@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/BMEA.dir/main.cpp.o  -o BMEA  util/libutil.a 

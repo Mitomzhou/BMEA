@@ -1,0 +1,2 @@
+/usr/bin/ar qc libutil.a  CMakeFiles/util.dir/string_util.cpp.o CMakeFiles/util.dir/math.cpp.o
+/usr/bin/ranlib libutil.a
