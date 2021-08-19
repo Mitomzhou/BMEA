@@ -17,6 +17,8 @@ double setPrecision(double num, int digitnum);
 
 double calcDistance(double x1, double y1, double x2, double y2);
 
+double calcRadian(double x1, double y1, double x2, double y2);
+
 /* vector包含vector */
 bool contain_v(std::vector<int> src, std::vector<int> det);
 

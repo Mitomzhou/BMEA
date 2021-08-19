@@ -72,8 +72,13 @@ void run(const std::string& filename){
     geometry::PlaneSet ps(filename);
     std::cout << "面数：" << ps.size() << std::endl;
 
-    extract(height_v, pc, ps);
-//    draw_contour();
+    // 返回最终contour
+    geometry::Contour resultContour = extract(height_v, pc, ps);
+
+
+    double rotation = getBuildingRotation(resultContour, pc);
+
+    std::cout << "建筑偏转角: " << rotation << std::endl;
 }
 
 void test()
@@ -89,22 +94,6 @@ void test()
 
 }
 
-void run_clusterd()
-{
-    std::string filename = "/home/mitom/data/obj/points_clustered_5_2L.obj";
-    // 点
-    geometry::PointCloud pc(filename);
-    cout << "点数：" << pc.size() << endl;
-
-    // 面
-    geometry::PlaneSet ps(filename);
-    std::cout << "面数：" << ps.size() << std::endl;
-
-    std::vector<double> height_v = {83.22, 87.91, 100.294, 103.38, 108.615};
-    extract(height_v, pc, ps);
-}
-
-
 int main() {
     char* filename = "/home/mitom/data/obj/single-plat-result.obj";
     bool rf = refineFile(filename);
@@ -113,5 +102,7 @@ int main() {
         return 0;
     }
     run("/home/mitom/data/obj/single-plat-result_refine_d.obj");
+
+
     return 0;
 }

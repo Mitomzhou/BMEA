@@ -57,6 +57,15 @@ double calcDistance(double x1, double y1, double x2, double y2)
     return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }
 
+double calcRadian(double x1, double y1, double x2, double y2)
+{
+    if(x1 == x2){
+        return 1.570796326794896; // PI / 2
+    }else{
+        return atan((y1-y2)/(x1-x2));
+    }
+}
+
 void doUnique(std::vector<int>& vec)
 {
     sort(vec.begin(),vec.end());

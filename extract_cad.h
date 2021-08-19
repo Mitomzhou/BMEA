@@ -21,7 +21,7 @@
 
 #include "./geometry/defines.h"
 
-void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::PlaneSet& ps);
+geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::PlaneSet& ps);
 
 /* 合并点函数, 对于同层 */
 std::vector<std::pair<int,int>> mergePoint(std::vector<int>& pointsIndex, geometry::PointCloud& pc, double threshold);
@@ -38,10 +38,16 @@ geometry::Contour replaceLinkPoint(std::vector<std::pair<int,int>>& verticalMerg
 /* 两个面中删除公共边 */
 geometry::Contour removeCommonEdge(geometry::Contour& contour);
 
+/* 是否有包含link */
 bool containLink(geometry::Contour& contour, std::pair<int, int>& dst);
 
 void draw_contour(geometry::Contour& contour, geometry::PointCloud& pc);
 void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc);
+
+/* 计算偏转角 */
+double getBuildingRotation(geometry::Contour& floorContour, geometry::PointCloud& pc);
+
+
 
 /**
  * 提取cad的主体函数
@@ -49,7 +55,7 @@ void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc);
  * @param pc
  * @param ps
  */
-void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::PlaneSet& ps)
+geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::PlaneSet& ps)
 {
     // 所有层的contour
     geometry::Contour allContour;
@@ -73,15 +79,6 @@ void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::
                 layerPlanesIndex.push_back(m);
             }
         }
-
-        if(false){
-            std::cout << "-------" << height_v[i] << std::endl;
-            for (auto point : layerPointsIndex)  std::cout << point << " ";
-            std::cout << std::endl;
-            std::cout << "面数： " << layerPlanesIndex.size() << std::endl;
-            for (auto plane : layerPlanesIndex)  std::cout << plane << " ";
-            std::cout << std::endl;
-        }
         // 面中所有的贡献点去重
         // 贡献该层面的点
         std::vector<int> contriLayerPoints;
@@ -91,9 +88,9 @@ void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::
             }
         }
         util::doUnique(contriLayerPoints);
-        std::cout << "当层面贡献点数： " << contriLayerPoints.size() << std::endl;
-        for (auto point : contriLayerPoints)  std::cout << point << " ";
-        std::cout << std::endl;
+        // std::cout << "当层面贡献点数： " << contriLayerPoints.size() << std::endl;
+        // for (auto point : contriLayerPoints)  std::cout << point << " ";
+        // std::cout << std::endl;
 
         std::vector<std::pair<int,int>> mergeTuples =  mergePoint(contriLayerPoints, pc, 0.1);
 
@@ -116,11 +113,8 @@ void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::
     // 得到所有层的点替换关系
     std::vector<std::pair<int,int>> verticalMergeTuples =  util::doUnique_pairv(mergePoint(allPoints, pc, 1));
 
-    std::cout << "所有点垂直替换关系" << verticalMergeTuples.size() << std::endl;
-    for (auto t : verticalMergeTuples){
-        std::cout << "(" << t.first << "," << t.second << ")" << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "所有点垂直替换关系" << verticalMergeTuples.size() << std::endl;
+    // std::cout << std::endl;
     // TODO 检查
     geometry::Contour result = replaceLinkPoint(verticalMergeTuples, allContour);
 
@@ -128,8 +122,9 @@ void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::
     for (auto t : result.getLinks()){
         std::cout << "(" << t.first+1 << "," << t.second+1 << ")" << " ";
     }
-
+    std::cout << std::endl;
     draw_contour(result, pc);
+    return result;
 }
 
 
@@ -183,6 +178,7 @@ std::vector<std::pair<int,int>> mergePoint(std::vector<int>& pointsIndex, geomet
         }
     }
     // 合并点前关系
+    /**
     std::cout << "合并点前关系： " << mergeRowList_tuple.size() << std::endl;
     for (auto t : mergeRowList_tuple){
         std::cout << "(" << t[0] << "," << t[1] << ")" << " ";
@@ -193,6 +189,7 @@ std::vector<std::pair<int,int>> mergePoint(std::vector<int>& pointsIndex, geomet
         std::cout << "(" << t.first << "," << t.second << ")" << " ";
     }
     std::cout << std::endl;
+     */
     return mergeResult;
 }
 
@@ -252,8 +249,8 @@ geometry::Contour connectContour(geometry::PlaneSet layerps)
         }
         contour.addLink(util::pair_sort(std::make_pair(layerps.getPointIndex(i,0), layerps.getPointIndex(i, pointsize-1)))); // 第一个点和最后一个点的link
     }
-    contour.print();
-    // 这里去重注意，对与两个面的公共边，要去除 TODO
+    // contour.print();
+    // 这里去重注意，对与两个面的公共边，要去除
     return removeCommonEdge(contour);
 }
 
@@ -266,7 +263,7 @@ geometry::Contour connectContour(geometry::PlaneSet layerps)
 geometry::Contour replaceLinkPoint(std::vector<std::pair<int,int>>& verticalMergeTuples, geometry::Contour& allContour)
 {
     geometry::Contour resultContour;
-    allContour.print();
+    // allContour.print();
 
     for(auto link : allContour.getLinks()){
         for (auto tuple : verticalMergeTuples){
@@ -279,19 +276,6 @@ geometry::Contour replaceLinkPoint(std::vector<std::pair<int,int>>& verticalMerg
         }
         resultContour.addLink(std::make_pair(link.first, link.second));
     }
-
-
-//    for (int i=0; i<allContour.getLinks().size(); i++){
-//        for (int j=0; j<verticalMergeTuples.size(); j++){
-//            if(verticalMergeTuples[j].second == allContour.getLinks()[i].first){
-//                allContour.getLinks()[i].first = verticalMergeTuples[j].first;
-//            }
-//            if(verticalMergeTuples[j].second == allContour.getLinks()[i].second){
-//                allContour.getLinks()[i].second = verticalMergeTuples[j].first;
-//            }
-//        }
-//    }
-//    return allContour;
     // contour去重
      return util::doUnique_pairv(resultContour.getLinks());
 }
@@ -322,6 +306,12 @@ geometry::Contour removeCommonEdge(geometry::Contour& contour)
     return resultContour;
 }
 
+/**
+ * 是否有包含link
+ * @param contour
+ * @param dst
+ * @return
+ */
 bool containLink(geometry::Contour& contour, std::pair<int, int>& dst)
 {
     for(auto link : contour.getLinks()){
@@ -380,6 +370,30 @@ void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc)
     }
     cv::imshow("mat",mat);
     cv::waitKey();
+}
+
+/* 在floor层中查找最长的轮廓线来定建筑方向 */
+double getBuildingRotation(geometry::Contour& floorContour, geometry::PointCloud& pc)
+{
+    // 获取最长线
+    std::vector<double> linkLenth;
+    for (auto link : floorContour.getLinks()) {
+        double x1 = pc.getPointSet()[link.first].getX();
+        double y1 = pc.getPointSet()[link.first].getY();
+        double x2 = pc.getPointSet()[link.second].getX();
+        double y2 = pc.getPointSet()[link.second].getY();
+        linkLenth.push_back(util::calcDistance(x1, y1, x2, y2));
+    }
+    std::vector<double>::iterator biggest = std::max_element(std::begin(linkLenth), std::end(linkLenth));
+    int longestIndex = std::distance(std::begin(linkLenth), biggest);
+
+    // 计算最长线的偏转角
+    double px1 = pc.getPointSet()[floorContour[longestIndex].first].getX();
+    double py1 = pc.getPointSet()[floorContour[longestIndex].first].getY();
+    double px2 = pc.getPointSet()[floorContour[longestIndex].second].getX();
+    double py2 = pc.getPointSet()[floorContour[longestIndex].second].getY();
+
+    return util::calcRadian(px1, py1, px2, py2);
 }
 
 #endif //BMEA_EXTRACT_CAD_H
