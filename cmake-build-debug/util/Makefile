@@ -59,19 +59,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /opt/clion-2020.3.3/bin/cmake/linux/bin/cmake
+CMAKE_COMMAND = /opt/clion-2020.3.2/bin/cmake/linux/bin/cmake
 
 # The command to remove a file.
-RM = /opt/clion-2020.3.3/bin/cmake/linux/bin/cmake -E rm -f
+RM = /opt/clion-2020.3.2/bin/cmake/linux/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/mitom/Music/clion_workspace/BMEA
+CMAKE_SOURCE_DIR = /home/mitom/Music/BMEA
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug
+CMAKE_BINARY_DIR = /home/mitom/Music/BMEA/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -79,7 +79,7 @@ CMAKE_BINARY_DIR = /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/opt/clion-2020.3.3/bin/cmake/linux/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/opt/clion-2020.3.2/bin/cmake/linux/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -90,7 +90,7 @@ rebuild_cache/fast: rebuild_cache
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/opt/clion-2020.3.3/bin/cmake/linux/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	/opt/clion-2020.3.2/bin/cmake/linux/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -100,14 +100,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_progress_start /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug/CMakeFiles /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug/util/CMakeFiles/progress.marks
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug/CMakeFiles 0
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_progress_start /home/mitom/Music/BMEA/cmake-build-debug/CMakeFiles /home/mitom/Music/BMEA/cmake-build-debug/util/CMakeFiles/progress.marks
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mitom/Music/BMEA/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/clean
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/clean
 .PHONY : clean
 
 # The main clean target
@@ -117,22 +117,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/preinstall
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/preinstall
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 util/CMakeFiles/util.dir/rule:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/CMakeFiles/util.dir/rule
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 util/CMakeFiles/util.dir/rule
 .PHONY : util/CMakeFiles/util.dir/rule
 
 # Convenience name for target.
@@ -142,7 +142,7 @@ util: util/CMakeFiles/util.dir/rule
 
 # fast build rule for target.
 util/fast:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/build
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/build
 .PHONY : util/fast
 
 math.o: math.cpp.o
@@ -151,7 +151,7 @@ math.o: math.cpp.o
 
 # target to build an object file
 math.cpp.o:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.o
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.o
 .PHONY : math.cpp.o
 
 math.i: math.cpp.i
@@ -160,7 +160,7 @@ math.i: math.cpp.i
 
 # target to preprocess a source file
 math.cpp.i:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.i
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.i
 .PHONY : math.cpp.i
 
 math.s: math.cpp.s
@@ -169,7 +169,7 @@ math.s: math.cpp.s
 
 # target to generate assembly for a file
 math.cpp.s:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.s
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.s
 .PHONY : math.cpp.s
 
 string_util.o: string_util.cpp.o
@@ -178,7 +178,7 @@ string_util.o: string_util.cpp.o
 
 # target to build an object file
 string_util.cpp.o:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/string_util.cpp.o
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/string_util.cpp.o
 .PHONY : string_util.cpp.o
 
 string_util.i: string_util.cpp.i
@@ -187,7 +187,7 @@ string_util.i: string_util.cpp.i
 
 # target to preprocess a source file
 string_util.cpp.i:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/string_util.cpp.i
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/string_util.cpp.i
 .PHONY : string_util.cpp.i
 
 string_util.s: string_util.cpp.s
@@ -196,7 +196,7 @@ string_util.s: string_util.cpp.s
 
 # target to generate assembly for a file
 string_util.cpp.s:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/string_util.cpp.s
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/string_util.cpp.s
 .PHONY : string_util.cpp.s
 
 # Help Target
@@ -225,6 +225,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/mitom/Music/clion_workspace/BMEA/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

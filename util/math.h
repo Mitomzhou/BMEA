@@ -24,7 +24,10 @@ bool contain_v(std::vector<int> src, std::vector<int> det);
 bool contain_i(std::vector<int> src, int item);
 
 /* 去重 */
+//template <typename T>
 void doUnique(std::vector<int>& src);
+
+void doUnique_d(std::vector<double>& src);
 
 /* 比较函数，大到小顺序, std::sort(v.begin(), v,end(), cmp_sort) */
 bool cmp_sort(double x1, double x2);

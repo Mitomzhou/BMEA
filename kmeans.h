@@ -282,6 +282,7 @@ vector<Cluster> kmeans(const geometry::PointCloud& pc)
     }
     // 找到perfermance最大的k
     k = util::argmax(pf_v);
+//    k = 4;
     return clusters_k[k];
 }
 

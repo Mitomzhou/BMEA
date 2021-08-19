@@ -1,4 +1,4 @@
-# Install script for directory: /home/mitom/Music/clion_workspace/BMEA/util
+# Install script for directory: /home/mitom/Music/BMEA/util
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

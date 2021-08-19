@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include<opencv2/opencv.hpp>
+
 #include "./geometry/defines.h"
 #include "./geometry/Point.h"
 #include "./geometry/Plane.h"
@@ -32,6 +34,14 @@ geometry::Contour connectContour(geometry::PlaneSet layerps);
 
 /* 替换contour中link点, 和同层面中替换聚类中点有所不同，同层面涉及面的构成问题，而link中不存在，直接去重就可以了 */
 geometry::Contour replaceLinkPoint(std::vector<std::pair<int,int>>& verticalMergeTuples, geometry::Contour& allContour);
+
+/* 两个面中删除公共边 */
+geometry::Contour removeCommonEdge(geometry::Contour& contour);
+
+bool containLink(geometry::Contour& contour, std::pair<int, int>& dst);
+
+void draw_contour(geometry::Contour& contour, geometry::PointCloud& pc);
+void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc);
 
 /**
  * 提取cad的主体函数
@@ -92,7 +102,7 @@ void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::
 
         // 得到单层轮廓线
         geometry::Contour contour = connectContour(layerps);
-
+        //draw_contour(contour, pc);
         for (auto link : contour.getLinks()){
             allContour.addLink(link);
         }
@@ -110,15 +120,16 @@ void extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::
     for (auto t : verticalMergeTuples){
         std::cout << "(" << t.first << "," << t.second << ")" << " ";
     }
-
+    std::cout << std::endl;
     // TODO 检查
     geometry::Contour result = replaceLinkPoint(verticalMergeTuples, allContour);
 
-    std::cout << std::endl << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    std::cout << std::endl << "最终的contour:" << result.size() << std::endl;
     for (auto t : result.getLinks()){
-        std::cout << "(" << t.first << "," << t.second << ")" << " ";
+        std::cout << "(" << t.first+1 << "," << t.second+1 << ")" << " ";
     }
 
+    draw_contour(result, pc);
 }
 
 
@@ -211,8 +222,12 @@ geometry::PlaneSet replaceMergePoints(std::vector<std::pair<int,int>>& mergeTupl
     geometry::PlaneSet resultPs;
     // 给面中点去重，并清除面中线段问题（元素少于3个）
     for (auto plane : srcPs.getPlaneSet()){
-        std::vector<int> pointsIndex = plane.getPointsIndex();
-        util::doUnique(pointsIndex);
+        std::vector<int> pointsIndex;
+        // 这里去重注意，不能把点顺序打乱
+        for (auto point : plane.getPointsIndex()){
+            if(!util::contain_i(pointsIndex, point))
+                pointsIndex.push_back(point);
+        }
         if(pointsIndex.size() > 3){
             resultPs.addPlane(pointsIndex);
         }
@@ -238,33 +253,133 @@ geometry::Contour connectContour(geometry::PlaneSet layerps)
         contour.addLink(util::pair_sort(std::make_pair(layerps.getPointIndex(i,0), layerps.getPointIndex(i, pointsize-1)))); // 第一个点和最后一个点的link
     }
     contour.print();
-    geometry::Contour resultContour(util::doUnique_pairv(contour.getLinks()));
-    resultContour.print();
-    return resultContour;
+    // 这里去重注意，对与两个面的公共边，要去除 TODO
+    return removeCommonEdge(contour);
 }
 
 /**
- * 替换所有contour中的点
+ * 替换所有contour中的点, 并且去重
  * @param verticalMergeTuples
  * @param allContour
  * @return
  */
 geometry::Contour replaceLinkPoint(std::vector<std::pair<int,int>>& verticalMergeTuples, geometry::Contour& allContour)
 {
-    for (int i=0; i<allContour.getLinks().size(); i++){
-        for (int j=0; j<verticalMergeTuples.size(); j++){
-            if(verticalMergeTuples[j].second == allContour.getLinks()[i].first){
-                allContour.getLinks()[i].first = verticalMergeTuples[j].first;
+    geometry::Contour resultContour;
+    allContour.print();
+
+    for(auto link : allContour.getLinks()){
+        for (auto tuple : verticalMergeTuples){
+            if(tuple.second == link.first){
+                link.first = tuple.first;
             }
-            if(verticalMergeTuples[j].second == allContour.getLinks()[i].second){
-                allContour.getLinks()[i].second = verticalMergeTuples[j].first;
+            if(tuple.second == link.second){
+                link.second = tuple.first;
             }
         }
+        resultContour.addLink(std::make_pair(link.first, link.second));
     }
-    return allContour;
-    // TODO 去重
 
+
+//    for (int i=0; i<allContour.getLinks().size(); i++){
+//        for (int j=0; j<verticalMergeTuples.size(); j++){
+//            if(verticalMergeTuples[j].second == allContour.getLinks()[i].first){
+//                allContour.getLinks()[i].first = verticalMergeTuples[j].first;
+//            }
+//            if(verticalMergeTuples[j].second == allContour.getLinks()[i].second){
+//                allContour.getLinks()[i].second = verticalMergeTuples[j].first;
+//            }
+//        }
+//    }
+//    return allContour;
+    // contour去重
+     return util::doUnique_pairv(resultContour.getLinks());
 }
 
+/**
+ * 消除公共边
+ * @param contour
+ * @return
+ */
+geometry::Contour removeCommonEdge(geometry::Contour& contour)
+{
+    geometry::Contour tmpContour;
+    geometry::Contour commonEdge;
+    geometry::Contour resultContour;
+    std::vector<std::pair<int, int>>::iterator it;
+    for (auto link : contour.getLinks()){
+        if(containLink(tmpContour, link)){
+            commonEdge.addLink(link);
+        }else{
+            tmpContour.addLink(link);
+        }
+    }
+    for(auto link : tmpContour.getLinks()){
+        if(!containLink(commonEdge, link)){
+            resultContour.addLink(link);
+        }
+    }
+    return resultContour;
+}
+
+bool containLink(geometry::Contour& contour, std::pair<int, int>& dst)
+{
+    for(auto link : contour.getLinks()){
+        if(link.first == dst.first && link.second == dst.second ||
+                link.second == dst.first && link.first == dst.second)
+            return true;
+    }
+    return false;
+}
+
+
+void draw_contour(geometry::Contour& contour, geometry::PointCloud& pc)
+{
+    int slace = 5;
+    const char* filename = "/home/mitom/bgb.png";
+    cv::Mat mat = cv::imread(filename);
+    cv::Scalar color = cv::Scalar(0, 0, 255);
+    for(auto link : contour.getLinks()){
+        double x1 = pc.getPointSet()[link.first].getX()-100;
+        double y1 = pc.getPointSet()[link.first].getY();
+        double x2 = pc.getPointSet()[link.second].getX()-100;
+        double y2 = pc.getPointSet()[link.second].getY();
+        if(true){
+            x1 *= slace; y1 *= slace; x2 *= slace; y2 *= slace;
+        }
+
+        cv::Point2d p1 = cv::Point2d(x1, y1);
+        cv::Point2d p2 = cv::Point2d(x2, y2) ;
+        cv::line(mat ,p1,p2,color,1,cv::LINE_8);
+    }
+    cv::imshow("mat",mat);
+    cv::waitKey();
+}
+
+void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc)
+{
+    int slace = 2;
+    const char* filename = "/home/mitom/bgb.png";
+    cv::Mat mat = cv::imread(filename);
+    cv::Scalar color = cv::Scalar(0, 0, 255);
+    for(auto link : contour.getLinks()){
+        double x1 = pc.getPointSet()[link.first].getX();
+        double y1 = pc.getPointSet()[link.first].getY();
+        double x2 = pc.getPointSet()[link.second].getX();
+        double y2 = pc.getPointSet()[link.second].getY();
+        if(true){
+            x1 *= slace; y1 *= slace; x2 *= slace; y2 *= slace;
+        }
+        if(true){
+            x1 += 0; y1 += 500; x2 += 0; y2 += 500;
+        }
+
+        cv::Point2d p1 = cv::Point2d(x1, y1);
+        cv::Point2d p2 = cv::Point2d(x2, y2) ;
+        cv::line(mat ,p1,p2,color,1,cv::LINE_8);
+    }
+    cv::imshow("mat",mat);
+    cv::waitKey();
+}
 
 #endif //BMEA_EXTRACT_CAD_H

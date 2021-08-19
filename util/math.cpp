@@ -5,6 +5,7 @@
 #include "math.h"
 #include "defines.h"
 
+
 UTIL_NAMESPACE_BEGIN
 
 double distance(double x1, double x2)
@@ -63,9 +64,16 @@ void doUnique(std::vector<int>& vec)
     vec.erase(it, vec.end());
 }
 
+void doUnique_d(std::vector<double>& vec)
+{
+    sort(vec.begin(),vec.end());
+    auto it = unique(vec.begin(), vec.end());
+    vec.erase(it, vec.end());
+}
+
 bool cmp_sort(double x1, double x2)
 {
-    return x1 > x2;
+    return x1 < x2;
 }
 
 std::pair<int, int> pair_sort(std::pair<int, int> link)
@@ -81,14 +89,23 @@ std::pair<int, int> pair_sort(std::pair<int, int> link)
 
 std::vector<std::pair<int, int>> doUnique_pairv(std::vector<std::pair<int, int>> links)
 {
+    std::vector<std::pair<int, int>> tmplinks;
     std::vector<std::pair<int, int>> resultContour;
+    for(auto link : links){  // 序号小的放前面, 便于去重
+        int left = link.first < link.second ? link.first : link.second;
+        int right = link.first > link.second ? link.first : link.second;
+        tmplinks.push_back(std::make_pair(left, right));
+    }
     std::list<std::pair<int, int>> listPair;
-    for(auto link : links){
+    std::list<std::pair<int, int>>::iterator it;
+
+    for(auto link : tmplinks){
         listPair.push_back(link);
     }
+
     listPair.sort();
     listPair.unique();
-    std::list<std::pair<int, int>>::iterator it;
+
     for(it=listPair.begin(); it!=listPair.end(); ++it){
         resultContour.push_back(std::make_pair((*it).first, (*it).second));
     }
