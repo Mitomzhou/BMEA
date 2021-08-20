@@ -48,7 +48,7 @@ protected:
 PlaneSet::PlaneSet(const std::string& objfile) {
     std::ifstream ifs;
     ifs.open(objfile.data());
-    assert(ifs.is_open());
+//    assert(ifs.is_open());
 
     std::string s;
     while (getline(ifs, s)){

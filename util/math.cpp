@@ -66,6 +66,20 @@ double calcRadian(double x1, double y1, double x2, double y2)
     }
 }
 
+std::vector<double> linefun(double x1, double y1, double x2, double y2)
+{
+    std::vector<double> coeff;
+    // 直线方程 a b c
+    double a = y2 - y1;
+    double b = x1 - x2;
+    double c = x2 * y1 - x1 * y2;
+    coeff.push_back(a);
+    coeff.push_back(b);
+    coeff.push_back(c);
+    return coeff;
+}
+
+
 void doUnique(std::vector<int>& vec)
 {
     sort(vec.begin(),vec.end());
@@ -119,6 +133,29 @@ std::vector<std::pair<int, int>> doUnique_pairv(std::vector<std::pair<int, int>>
         resultContour.push_back(std::make_pair((*it).first, (*it).second));
     }
     return resultContour;
+}
+
+int find_e(const std::vector<int>& vec, const int element)
+{
+    for(int i=0; i<vec.size(); i++){
+        if(element == vec[i]){
+            return i;
+        }
+    }
+    return 0;
+}
+
+void remove(std::vector<int>& vec, int index)
+{
+    if (vec.size() <= index){
+        return ;
+    }
+    int tmp = vec[index];
+    vec[index] = vec[vec.size()-1];
+    vec.pop_back();
+//    tmp = vec[index];
+//    vec[index] = vec[vec.size()-1];
+//    vec[vec.size()-1] = tmp;
 }
 
 UTIL_NAMESPACE_END

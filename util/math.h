@@ -19,6 +19,9 @@ double calcDistance(double x1, double y1, double x2, double y2);
 
 double calcRadian(double x1, double y1, double x2, double y2);
 
+std::vector<double> linefun(double x1, double y1, double x2, double y2);
+
+
 /* vector包含vector */
 bool contain_v(std::vector<int> src, std::vector<int> det);
 
@@ -38,6 +41,13 @@ std::pair<int, int> pair_sort(std::pair<int, int> link);
 
 /* link 去重 */
 std::vector<std::pair<int, int>> doUnique_pairv(std::vector<std::pair<int, int>> links);
+
+/* 查找元素第一次出现的下标 */
+int find_e(const std::vector<int>& vec, const int element);
+
+/* 移除vector下标index元素 */
+void remove(std::vector<int>& vec, int index);
+
 
 UTIL_NAMESPACE_END
 

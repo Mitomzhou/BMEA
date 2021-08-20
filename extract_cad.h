@@ -47,6 +47,18 @@ void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc);
 /* 计算偏转角 */
 double getBuildingRotation(geometry::Contour& floorContour, geometry::PointCloud& pc);
 
+/* link转换成多边形 */
+std::vector<std::vector<int>> linkConvertPolygen(geometry::Contour& contour, int findValue);
+
+/* 计算点是否在线上 */
+bool pointOnLine(geometry::Point point1, geometry::Point point2, geometry::Point referPoint, double thredDistance); // thredDistance=0.3
+
+/* 判断点是否在多边形内，计算遮挡关系 */
+bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<int>& polygen, const geometry::PointCloud& pc);
+
+/* 计算内点 */
+std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& multlayerPolygensContour,
+                                 const geometry::PointCloud& pc, std::vector<std::pair<int,int>>& verticalMergeTuples);
 
 
 /**
@@ -61,6 +73,8 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
     geometry::Contour allContour;
     // 所有层的点(同层平面点是替换过的)
     std::vector<int> allPoints;
+    // 非俯视图的首尾相接的polygen，用于立面结构遮挡关系判断: 三维结构，层-》单层多边形几何-》单个多边形点
+    std::vector<std::vector<std::vector<int>>> multlayerPolygensContour;
 
     std::vector<std::vector<int>> allLayerPointsIndex;
     std::vector<double> zcol = pc.getZCol();
@@ -99,6 +113,13 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
 
         // 得到单层轮廓线
         geometry::Contour contour = connectContour(layerps);
+
+        //if(非俯视图) // TODO
+        if(contour.getLinks().size() != 0){
+            std::vector<std::vector<int>> polygensContour = linkConvertPolygen(contour, contour.getLinks()[0].first);
+            multlayerPolygensContour.push_back(polygensContour);
+        }
+
         //draw_contour(contour, pc);
         for (auto link : contour.getLinks()){
             allContour.addLink(link);
@@ -115,7 +136,6 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
 
     // std::cout << "所有点垂直替换关系" << verticalMergeTuples.size() << std::endl;
     // std::cout << std::endl;
-    // TODO 检查
     geometry::Contour result = replaceLinkPoint(verticalMergeTuples, allContour);
 
     std::cout << std::endl << "最终的contour:" << result.size() << std::endl;
@@ -123,7 +143,14 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
         std::cout << "(" << t.first+1 << "," << t.second+1 << ")" << " ";
     }
     std::cout << std::endl;
-    draw_contour(result, pc);
+    // draw_contour(result, pc);
+
+
+    std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples);
+    for(auto p : innerPointsIndex)  std::cout << p << ",";
+    std::cout << std::endl;
+
+
     return result;
 }
 
@@ -395,5 +422,151 @@ double getBuildingRotation(geometry::Contour& floorContour, geometry::PointCloud
 
     return util::calcRadian(px1, py1, px2, py2);
 }
+
+/**
+ * 将link转为首尾相接polygen
+ * @param contour
+ * @param findValue
+ * @return
+ */
+std::vector<std::vector<int>> linkConvertPolygen(geometry::Contour& contour, int findValue)
+{
+    std::vector<int> first;
+    std::vector<int> second;
+    bool bfindValue = true;
+
+    for (auto link : contour.getLinks()) {
+        first.push_back(link.first);
+        second.push_back(link.second);
+    }
+    std::vector<std::vector<int>> polygensContour; // 单层多个多边形contour
+    std::vector<int> onePolyenLink;  // 一个多边形的连续link点，首尾相接
+
+    while(first.size() != 0){
+        int itemIndex = 0;
+        int itemValue = 0;
+        if (std::count(first.begin(), first.end(), findValue) != 0){
+            itemIndex = util::find_e(first, findValue);
+            itemValue = second[itemIndex];
+            bfindValue = true;
+            findValue = itemValue;
+        }else if(std::count(second.begin(), second.end(), findValue) != 0){
+            itemIndex = util::find_e(second, findValue);
+            itemValue = first[itemIndex];
+            bfindValue = true;
+            findValue = itemValue;
+        }else{
+            bfindValue = false;
+            findValue = first[0];
+        }
+        util::remove(first, itemIndex);
+        util::remove(second, itemIndex);
+
+
+        if (bfindValue) {
+            onePolyenLink.push_back(findValue);
+        }else{ // tail - top
+            onePolyenLink.push_back(onePolyenLink[0]);
+            polygensContour.push_back(onePolyenLink);
+            onePolyenLink.clear();
+            onePolyenLink.push_back(findValue);
+        }
+        if(first.size() == 0){
+            onePolyenLink.push_back(onePolyenLink[0]);
+            polygensContour.push_back(onePolyenLink);
+        }
+    }
+    if(false){ // print
+        std::cout << "pplygen num: " << polygensContour.size() << std::endl;
+        for(auto contour : polygensContour){
+            for(auto e : contour)  std::cout << e << ",";
+            std::cout << std::endl;
+        }
+    }
+    return polygensContour;
+}
+
+bool pointOnLine(geometry::Point point1, geometry::Point point2, geometry::Point referPoint, double thredDistance)
+{
+    std::vector<double> coeff = util::linefun(point1.getX(), point1.getY(), point2.getX(), point2.getY());
+    if (point1.getX() <= referPoint.getX() && referPoint.getX() <= point2.getX() ||
+        point2.getX() <= referPoint.getX() && referPoint.getX() <= point1.getX()){
+        // 点到直线的距离公式
+        double distance = abs(coeff[0] * referPoint.getX() + coeff[1] * referPoint.getY() + coeff[2])/sqrt(coeff[0] * coeff[0] + coeff[1] * coeff[1]);
+        if (distance <= thredDistance){
+            return true;
+        }
+    }else{
+        double distance1 = util::calcDistance(referPoint.getX(), referPoint.getY(), point1.getX(), point1.getY());
+        double distance2 = util::calcDistance(referPoint.getX(), referPoint.getY(), point2.getX(), point2.getY());
+        if (distance1 <= thredDistance || distance2 <= thredDistance){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<int>& polygen, const geometry::PointCloud& pc)
+{
+    for(int i=0; i<polygen.size()-1; i++){
+        if(pointOnLine(pc.getPointSet()[i], pc.getPointSet()[i+1], referPoint, 0.3)){
+            return false;
+        }
+    }
+    int crossing = 0;
+    for(int i=0; i<polygen.size()-1; i++){
+        double slope = 0;
+        if (pc.getPointSet()[i+1].getX() - pc.getPointSet()[i].getX() != 0){
+            slope = (pc.getPointSet()[i+1].getY() - pc.getPointSet()[i].getY()) / (pc.getPointSet()[i+1].getX() - pc.getPointSet()[i].getX());
+        }
+        bool condition1 = (pc.getPointSet()[i].getX() < referPoint.getX()) && (referPoint.getX() < pc.getPointSet()[i+1].getX());
+        bool condition2 = (pc.getPointSet()[i+1].getX() < referPoint.getX()) && (referPoint.getX() < pc.getPointSet()[i].getX());
+        bool above = (referPoint.getY() < slope * (referPoint.getX() - pc.getPointSet()[i].getX() + pc.getPointSet()[i].getX()) );
+        if((condition1 || condition2) && above){
+            crossing ++;
+        }
+    }
+    return (crossing % 2 != 0);
+}
+
+std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& multlayerPolygensContour, const geometry::PointCloud& pc, std::vector<std::pair<int,int>>& verticalMergeTuples)
+{
+    std::vector<int> innerPointsIndex;
+    std::vector<std::vector<int>> toplayerPolygens;
+    for(int l=0; l<multlayerPolygensContour.size(); l++){
+        for (int i=l; i<multlayerPolygensContour.size(); i++){
+            if(i == l){ // 顶层面
+                toplayerPolygens = multlayerPolygensContour[l];
+                continue;
+            }
+            for (int j=0; j<multlayerPolygensContour[i].size(); j++){ // 多个多边形
+                for (int k=0; k<multlayerPolygensContour[i][j].size(); k++){ // 单个多边形
+                    int referPointIndex = multlayerPolygensContour[i][j][k];
+                    geometry::Point referPoint = pc.getPointSet()[referPointIndex];
+                    for (int c=0; c<toplayerPolygens.size(); c++){
+                        std::vector<int> polygen;
+                        polygen = (toplayerPolygens[i]);
+                        if(polygenContainsPoint(referPoint, polygen, pc))
+                        {
+                            innerPointsIndex.push_back(referPointIndex);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    util::doUnique(innerPointsIndex); // 内点去重
+
+    // 内点被“所有层的点替换关系 verticalMergeTuples” 过滤后，返回内点,原因：不然会找不到情况（因为它换马甲了）
+    for (int i=0; i<innerPointsIndex.size(); i++){
+        for(auto tuple : verticalMergeTuples){
+            if(innerPointsIndex[i] == tuple.second){
+                innerPointsIndex[i] == tuple.first;
+            }
+        }
+    }
+    return innerPointsIndex;
+}
+
 
 #endif //BMEA_EXTRACT_CAD_H

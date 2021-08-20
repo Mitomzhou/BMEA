@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <iterator>
 #include "kmeans.h"
 #include "geometry/Point.h"
 #include "geometry/PointCloud.h"
@@ -83,15 +85,10 @@ void run(const std::string& filename){
 
 void test()
 {
-    std::vector<std::pair<int, int>> vp;
-    vp.push_back(std::make_pair(10,100));
-    for(auto p : vp){
-        p.first = 1000000;
-    }
-    for(auto p : vp){
-        cout << p.first << endl;
-    }
-
+    std::vector<int> a = {2,4,6,3,7,2}; // 2,4,2,3,7}
+    std::vector<int> b;
+    b = a;
+    cout << b[2] << endl;
 }
 
 int main() {
@@ -102,7 +99,6 @@ int main() {
         return 0;
     }
     run("/home/mitom/data/obj/single-plat-result_refine_d.obj");
-
-
+//    test();
     return 0;
 }
