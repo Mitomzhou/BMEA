@@ -143,12 +143,14 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
         std::cout << "(" << t.first+1 << "," << t.second+1 << ")" << " ";
     }
     std::cout << std::endl;
-    // draw_contour(result, pc);
+    draw_contour(result, pc);
 
-
-    std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples);
-    for(auto p : innerPointsIndex)  std::cout << p << ",";
-    std::cout << std::endl;
+    // 内存报错，vector操作问题？ TODO
+    // terminate called after throwing an instance of 'std::bad_alloc'
+    //  what():  std::bad_alloc
+//    std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples);
+//    for(auto p : innerPointsIndex)  std::cout << p << ",";
+//    std::cout << std::endl;
 
 
     return result;
