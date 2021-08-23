@@ -77,6 +77,7 @@ void run(const std::string& filename){
     // 返回最终contour
     geometry::Contour resultContour = extract(height_v, pc, ps);
 
+    draw_contour(resultContour, pc);
 
     double rotation = getBuildingRotation(resultContour, pc);
 
@@ -85,10 +86,7 @@ void run(const std::string& filename){
 
 void test()
 {
-    std::vector<int> a = {2,4,6,3,7,2}; // 2,4,2,3,7}
-    std::vector<int> b;
-    b = a;
-    cout << b[2] << endl;
+
 }
 
 int main() {
@@ -99,6 +97,6 @@ int main() {
         return 0;
     }
     run("/home/mitom/data/obj/single-plat-result_refine_d.obj");
-//    test();
+    //test();
     return 0;
 }

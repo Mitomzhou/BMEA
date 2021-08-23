@@ -113,6 +113,7 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
 
         // 得到单层轮廓线
         geometry::Contour contour = connectContour(layerps);
+        //draw_contour(contour, pc);
 
         //if(非俯视图) // TODO
         if(contour.getLinks().size() != 0){
@@ -120,7 +121,7 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
             multlayerPolygensContour.push_back(polygensContour);
         }
 
-        //draw_contour(contour, pc);
+
         for (auto link : contour.getLinks()){
             allContour.addLink(link);
         }
@@ -138,22 +139,40 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
     // std::cout << std::endl;
     geometry::Contour result = replaceLinkPoint(verticalMergeTuples, allContour);
 
-    std::cout << std::endl << "最终的contour:" << result.size() << std::endl;
-    for (auto t : result.getLinks()){
-        std::cout << "(" << t.first+1 << "," << t.second+1 << ")" << " ";
-    }
+    std::cout << std::endl << "最终的contour(去除内点前):" << result.size() << std::endl;
+    result.print();
     std::cout << std::endl;
-    draw_contour(result, pc);
+    //draw_contour(result, pc);
 
-    // 内存报错，vector操作问题？ TODO
-    // terminate called after throwing an instance of 'std::bad_alloc'
-    //  what():  std::bad_alloc
-//    std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples);
-//    for(auto p : innerPointsIndex)  std::cout << p << ",";
-//    std::cout << std::endl;
+//    std::cout << "多层多个多边形:" << std::endl;
+//    for (auto layer : multlayerPolygensContour){
+//        for(auto poly : layer){
+//            for (auto p : poly)  {
+//                std::cout << p << ",";
+//            }
+//            std::cout << "||";
+//        }
+//        std::cout << std::endl;
+//    }
 
 
-    return result;
+    std::cout << "内点:" << std::endl;
+    std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples);
+    for(auto p : innerPointsIndex)  std::cout << p << ",";
+    std::cout << std::endl;
+
+    // 内点在result link中就去除
+    geometry::Contour cadcontour;
+    for (auto link : result.getLinks()){
+        bool exist = false;
+        for (auto point : innerPointsIndex){
+            exist = (exist || (link.first == point || link.second == point));
+        }
+        if (!exist){
+            cadcontour.addLink(link);
+        }
+    }
+    return cadcontour;
 }
 
 
@@ -511,19 +530,23 @@ bool pointOnLine(geometry::Point point1, geometry::Point point2, geometry::Point
 bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<int>& polygen, const geometry::PointCloud& pc)
 {
     for(int i=0; i<polygen.size()-1; i++){
-        if(pointOnLine(pc.getPointSet()[i], pc.getPointSet()[i+1], referPoint, 0.3)){
+        geometry::Point point1 = pc.getPointSet()[polygen[i]];
+        geometry::Point point2 = pc.getPointSet()[polygen[i+1]];
+        if(pointOnLine(point1, point2, referPoint, 0.3)){
             return false;
         }
     }
     int crossing = 0;
     for(int i=0; i<polygen.size()-1; i++){
         double slope = 0;
-        if (pc.getPointSet()[i+1].getX() - pc.getPointSet()[i].getX() != 0){
-            slope = (pc.getPointSet()[i+1].getY() - pc.getPointSet()[i].getY()) / (pc.getPointSet()[i+1].getX() - pc.getPointSet()[i].getX());
+        geometry::Point point1 = pc.getPointSet()[polygen[i]];
+        geometry::Point point2 = pc.getPointSet()[polygen[i+1]];
+        if (point2.getX() - point1.getX() != 0){
+            slope = (point2.getY() - point1.getY()) / (point2.getX() - point1.getX());
         }
-        bool condition1 = (pc.getPointSet()[i].getX() < referPoint.getX()) && (referPoint.getX() < pc.getPointSet()[i+1].getX());
-        bool condition2 = (pc.getPointSet()[i+1].getX() < referPoint.getX()) && (referPoint.getX() < pc.getPointSet()[i].getX());
-        bool above = (referPoint.getY() < slope * (referPoint.getX() - pc.getPointSet()[i].getX() + pc.getPointSet()[i].getX()) );
+        bool condition1 = (point1.getX() <= referPoint.getX()) && (referPoint.getX() < point2.getX());
+        bool condition2 = (point2.getX() <= referPoint.getX()) && (referPoint.getX() < point1.getX());
+        bool above = (referPoint.getY() < slope * (referPoint.getX() - point1.getX()) + point1.getY() );
         if((condition1 || condition2) && above){
             crossing ++;
         }
@@ -547,7 +570,7 @@ std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& mul
                     geometry::Point referPoint = pc.getPointSet()[referPointIndex];
                     for (int c=0; c<toplayerPolygens.size(); c++){
                         std::vector<int> polygen;
-                        polygen = (toplayerPolygens[i]);
+                        polygen = (toplayerPolygens[c]);
                         if(polygenContainsPoint(referPoint, polygen, pc))
                         {
                             innerPointsIndex.push_back(referPointIndex);
@@ -563,7 +586,7 @@ std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& mul
     for (int i=0; i<innerPointsIndex.size(); i++){
         for(auto tuple : verticalMergeTuples){
             if(innerPointsIndex[i] == tuple.second){
-                innerPointsIndex[i] == tuple.first;
+                innerPointsIndex[i] = tuple.first;
             }
         }
     }
