@@ -11,7 +11,7 @@
 #include "extract_cad.h"
 
 #include<opencv2/opencv.hpp>
-#include </usr/include/python3.6/Python.h>
+#include </usr/include/python3.8/Python.h>
 //#include "Extract.h"
 
 using std::cout;
@@ -126,15 +126,31 @@ double getRotation()
 
 void test()
 {
+    std::string sfilename = "/home/mitom/data/obj/single-plat-result.obj";
     std::vector<geometry::Contour> CAD5;
-
     std::vector<std::string> direction_v = {"d","f","b","l","r"};
     //==============1、获取building的偏转角度====================
     double rotation = getRotation();
     //==============2、for 5 direction =================
-    for(int i=0; i<direction_v.size(); i++){
-        char* filename = "/home/mitom/data/obj/single-plat-result.obj";
-        bool rf = refineFile(filename, rotation, i);
+    for(int i=0; i<1; i++){
+        if(i == 0){
+            char* cfilename = const_cast<char*>(sfilename.c_str());
+            bool rf = refineFile(cfilename, rotation, i);
+            if(!rf){
+                std::cout << "聚类模块错误!" << std::endl;
+                return ;
+            }
+            run(util::addtoFilename(sfilename, direction_v[0]));
+        }else{
+            // TODO
+            std::string sfilename_ = util::addtoFilename(sfilename, direction_v[0]);
+            char* cfilename_ = const_cast<char*>(sfilename_.c_str());
+            bool rf = refineFile(cfilename_, rotation, i);
+            if(!rf){
+                std::cout << "聚类模块错误!" << std::endl;
+                return ;
+            }
+        }
     }
 
     return ;
@@ -150,5 +166,6 @@ int main() {
 //    }
 //    run("/home/mitom/data/obj/single-plat-result_refine_new1_refine_d.obj");
     test();
+    //cout << util::addtoFilename("/home/mitom/data/obj/single-plat-result.obj","d") << endl;
     return 0;
 }

@@ -22,6 +22,8 @@ double stod(std::string str);
 /* 去除string末尾的空格 */
 std::string& trim(std::string &s);
 
+std::string addtoFilename(std::string filename, const std::string& tag);
+
 UTIL_NAMESPACE_END
 
 #endif //BMEA_STRING_UTIL_H

@@ -131,12 +131,12 @@ def get_cluster_center(points, faces, filename, direction):
     points[:, -1] = height
     high.sort()
     print("聚类中心：", high)
-    rename = ['d','f','b','l','r']
-    refine_file = filename_generator(filename, rename[direction])
-    write_model(points, faces, refine_file)
+    direction_name = ['d','f','b','l','r']
+    refine_file = filename_generator(filename, direction_name[direction])
+    write_model(points, faces, refine_file, direction_name[direction])
     return high, points
 
-def write_model(points, faces, outfile):
+def write_model(points, faces, outfile, direction_name):
     """
     写入模型，保存
     :param points 点云
@@ -145,7 +145,17 @@ def write_model(points, faces, outfile):
     """
     file = open(outfile, 'w')
     for p in points:
-        file.write('v ' + str(p[0]) + ' ' + str(p[1]) + ' ' + str(p[2]) + '\n')
+        if direction_name == 'd':
+            x,y,z = p[0], p[1], p[3]
+        elif direction_name == 'f':
+            x,y,z = p[0], -p[2], p[1]
+        elif direction_name == 'b':
+            x,y,z = p[0], p[2], -p[1]
+        elif direction_name == 'l':
+            x,y,z = -p[2], p[1], p[0]
+        elif direction_name == 'r':
+            x,y,z = p[2], p[1], -p[0]
+        file.write('v ' + str(x) + ' ' + str(y) + ' ' + str(z) + '\n')
     for f in faces:
         line = 'f '
         for i in f:

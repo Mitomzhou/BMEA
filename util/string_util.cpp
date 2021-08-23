@@ -76,5 +76,12 @@ std::string& trim(std::string &s)
     return s;
 }
 
+std::string addtoFilename(std::string filename, const std::string& tag)
+{
+    std::string suffix = "_" + tag + ".";
+    filename = filename.replace(filename.find(".obj"), 1, suffix);
+    return filename;
+}
+
 
 UTIL_NAMESPACE_END
