@@ -4,14 +4,14 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/mitom/Music/BMEA/util/math.cpp" "/home/mitom/Music/BMEA/cmake-build-debug/util/CMakeFiles/util.dir/math.cpp.o"
-  "/home/mitom/Music/BMEA/util/string_util.cpp" "/home/mitom/Music/BMEA/cmake-build-debug/util/CMakeFiles/util.dir/string_util.cpp.o"
+  "/home/mitom/Music/clion_workspace/BMEA/util/math.cpp" "/home/mitom/Music/clion_workspace/BMEA/cmake-build-debug/util/CMakeFiles/util.dir/math.cpp.o"
+  "/home/mitom/Music/clion_workspace/BMEA/util/string_util.cpp" "/home/mitom/Music/clion_workspace/BMEA/cmake-build-debug/util/CMakeFiles/util.dir/string_util.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/usr/include/python3.6m"
+  "/usr/include/python3.8"
   "../util/.."
   )
 

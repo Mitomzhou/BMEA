@@ -6,5 +6,5 @@ CXX_FLAGS = -g   -std=gnu++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/usr/include/python3.6m -I/home/mitom/Music/BMEA/util/.. 
+CXX_INCLUDES = -I/usr/include/python3.8 -I/home/mitom/Music/clion_workspace/BMEA/util/.. 
 
