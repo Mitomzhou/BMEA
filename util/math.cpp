@@ -96,7 +96,7 @@ void doUnique_d(std::vector<double>& vec)
 
 bool cmp_sort(double x1, double x2)
 {
-    return x1 < x2;
+    return x1 > x2;
 }
 
 std::pair<int, int> pair_sort(std::pair<int, int> link)

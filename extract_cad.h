@@ -373,19 +373,22 @@ bool containLink(geometry::Contour& contour, std::pair<int, int>& dst)
 
 void draw_contour(geometry::Contour& contour, geometry::PointCloud& pc)
 {
-    int slace = 5;
+    int slace = 3;
     const char* filename = "/home/mitom/bgb.png";
     cv::Mat mat = cv::imread(filename);
     cv::Scalar color = cv::Scalar(0, 0, 255);
     for(auto link : contour.getLinks()){
-        double x1 = pc.getPointSet()[link.first].getX()-100;
+        double x1 = pc.getPointSet()[link.first].getX(); // result -100
         double y1 = pc.getPointSet()[link.first].getY();
-        double x2 = pc.getPointSet()[link.second].getX()-100;
+        double x2 = pc.getPointSet()[link.second].getX();
         double y2 = pc.getPointSet()[link.second].getY();
         if(true){
             x1 *= slace; y1 *= slace; x2 *= slace; y2 *= slace;
         }
-
+        if(false){
+            x1 += 500; y1 += 0; x2 += 500; y2 += 0;
+        }
+//        std::cout << x1 << ", "<< y1 << ", "<< x2 << ", "<< y2 << std::endl;
         cv::Point2d p1 = cv::Point2d(x1, y1);
         cv::Point2d p2 = cv::Point2d(x2, y2) ;
         cv::line(mat ,p1,p2,color,1,cv::LINE_8);
@@ -409,11 +412,11 @@ void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc)
             x1 *= slace; y1 *= slace; x2 *= slace; y2 *= slace;
         }
         if(true){
-            x1 += 0; y1 += 500; x2 += 0; y2 += 500;
+            x1 += 400; y1 += 0; x2 += 400; y2 += 0;
         }
-
         cv::Point2d p1 = cv::Point2d(x1, y1);
-        cv::Point2d p2 = cv::Point2d(x2, y2) ;
+        cv::Point2d p2 = cv::Point2d(x2, y2);
+
         cv::line(mat ,p1,p2,color,1,cv::LINE_8);
     }
     cv::imshow("mat",mat);

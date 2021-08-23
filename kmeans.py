@@ -1,27 +1,24 @@
 import numpy as np
+import math
 from sklearn.cluster import KMeans
 
 import sys
 if 'threading' in sys.modules:
     del sys.modules['threading']
 
-def get_pc(filename):
+def calc_deflection_point(x, y, radian):
     """
-    获取点云
-    :param filename:
+    计算旋转radian后的点
+    :param x:
+    :param y:
+    :param radian: 旋转弧度
     :return:
     """
-    f = open(filename)
-    points = f.read()
-    f.close()
-    points = points.split('\n')
-    points = [i.split() for i in points if 'v ' in i]
-    points = [[eval(ii) for ii in i[1:]] for i in points]
-    # print(points)
-    return np.array(points)
+    update_x = x * math.cos(radian) + y * math.sin(radian)
+    update_y = -x * math.sin(radian) + y * math.cos(radian)
+    return update_x, update_y
 
-
-def parse_obj(filename):
+def parse_obj(filename, radian):
     """
     get points and faces
         注意，faces中间保存是文件中点的下标
@@ -29,12 +26,24 @@ def parse_obj(filename):
     :return: np.array的点云 list的面
     """
     f = open(filename)
-    points = f.read()
+    pointfile = f.read()
     f.close()
-    lines = points.split('\n')
-    points = [i.split() for i in lines if 'v ' in i]
-    points = [[eval(ii) for ii in i[1:]] for i in points]
+    lines = pointfile.split('\n')
+    pointfile = [i.split() for i in lines if 'v ' in i]
+    points = []
+    for i in range(len(pointfile)):
+        point = []
+        x = eval(pointfile[i][1])
+        y = eval(pointfile[i][2])
+        z = eval(pointfile[i][3])
 
+        # 旋转点
+        x, y = calc_deflection_point(x, y, radian)
+
+        point.append(x)
+        point.append(y)
+        point.append(z)
+        points.append(point)
     faces = [i.split() for i in lines if 'f ' in i]
     faces = [[eval(ii) for ii in i[1:]] for i in faces]
     print("点数：", len(points))
@@ -104,7 +113,7 @@ def find_k(points):
     return c_num[np.argmax(pf_ls)]
 
 
-def get_cluster_center(points, faces, filename):
+def get_cluster_center(points, faces, filename, direction):
     """
     获取聚类中心（精确到后三位）,并重新跟新点云points
     :param points:
@@ -122,7 +131,8 @@ def get_cluster_center(points, faces, filename):
     points[:, -1] = height
     high.sort()
     print("聚类中心：", high)
-    refine_file = filename_generator(filename, 'd')
+    rename = ['d','f','b','l','r']
+    refine_file = filename_generator(filename, rename[direction])
     write_model(points, faces, refine_file)
     return high, points
 
@@ -152,16 +162,18 @@ def filename_generator(filename, direction='d'):
     """
     file_path_list = filename.split("/")
     refine_file = "/".join(file_path_list[:-1])
-    prefix = "/" + file_path_list[len(file_path_list) - 1][:-4] + "_refine_" + direction + ".obj"
+    prefix = "/" + file_path_list[len(file_path_list) - 1][:-4] + "_" + direction + ".obj"
     refine_file += prefix
     return refine_file
 
-def run(filename):
+def run(filename, radian, direction):
     #filename = '/home/mitom/data/obj/single-plat-result.obj'
-    points, faces = parse_obj(filename)
-    height, points = get_cluster_center(points, faces, filename)
+    points, faces = parse_obj(filename, radian)
+    print(filename, radian)
+    height, points = get_cluster_center(points, faces, filename, direction)
     print(height)
     return 1
 
 # if __name__ == "__main__":
-#     run()
+#     filename = '/home/mitom/data/obj/single-plat-result.obj'
+#     run(filename, 0, 0)
