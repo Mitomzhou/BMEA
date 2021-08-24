@@ -139,22 +139,10 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
     // std::cout << std::endl;
     geometry::Contour result = replaceLinkPoint(verticalMergeTuples, allContour);
 
-    std::cout << std::endl << "最终的contour(去除内点前):" << result.size() << std::endl;
-    result.print();
-    std::cout << std::endl;
+    // std::cout << std::endl << "最终的contour(去除内点前):" << result.size() << std::endl;
+    // result.print();
+    // std::cout << std::endl;
     //draw_contour(result, pc);
-
-//    std::cout << "多层多个多边形:" << std::endl;
-//    for (auto layer : multlayerPolygensContour){
-//        for(auto poly : layer){
-//            for (auto p : poly)  {
-//                std::cout << p << ",";
-//            }
-//            std::cout << "||";
-//        }
-//        std::cout << std::endl;
-//    }
-
 
     std::cout << "内点:" << std::endl;
     std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples);
@@ -386,7 +374,7 @@ void draw_contour(geometry::Contour& contour, geometry::PointCloud& pc)
             x1 *= slace; y1 *= slace; x2 *= slace; y2 *= slace;
         }
         if(false){
-            x1 += 500; y1 += 0; x2 += 500; y2 += 0;
+            x1 += 0; y1 += 500; x2 += 0; y2 += 500;
         }
 //        std::cout << x1 << ", "<< y1 << ", "<< x2 << ", "<< y2 << std::endl;
         cv::Point2d p1 = cv::Point2d(x1, y1);

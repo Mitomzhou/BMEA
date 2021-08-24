@@ -18,7 +18,7 @@ def calc_deflection_point(x, y, radian):
     update_y = -x * math.sin(radian) + y * math.cos(radian)
     return update_x, update_y
 
-def parse_obj(filename, radian):
+def parse_obj(filename, radian, direction):
     """
     get points and faces
         注意，faces中间保存是文件中点的下标
@@ -33,13 +33,23 @@ def parse_obj(filename, radian):
     points = []
     for i in range(len(pointfile)):
         point = []
-        x = eval(pointfile[i][1])
-        y = eval(pointfile[i][2])
-        z = eval(pointfile[i][3])
-
+        a = eval(pointfile[i][1])
+        b = eval(pointfile[i][2])
+        c = eval(pointfile[i][3])
         # 旋转点
-        x, y = calc_deflection_point(x, y, radian)
-
+        a, b = calc_deflection_point(a, b, radian)
+        if direction == 0 or direction == -1:
+            x,y,z = a, b, c
+        elif direction == 1:
+            x,y,z = a, -c, b
+        elif direction == 2:
+            x,y,z = a, c, -b
+        elif direction == 3:
+            x,y,z = -c, b, a
+        elif direction == 4:
+            x,y,z = c, b, -a
+        else:
+            x,y,z = a, b, c
         point.append(x)
         point.append(y)
         point.append(z)
@@ -127,16 +137,20 @@ def get_cluster_center(points, faces, filename, direction):
 
     high = [round(i[0], 3) for i in km.cluster_centers_]
     # refine高度
-    height = [high[i] for i in km.labels_]
-    points[:, -1] = height
+    if direction != -1:
+        height = [high[i] for i in km.labels_]
+        points[:, -1] = height
     high.sort()
     print("聚类中心：", high)
     direction_name = ['d','f','b','l','r']
-    refine_file = filename_generator(filename, direction_name[direction])
-    write_model(points, faces, refine_file, direction_name[direction])
+    if direction == -1:
+        refine_file = filename  # 修正方向替换本身的文件，不用重命名其他文件名称
+    else:
+        refine_file = filename_generator(filename, direction_name[direction])
+    write_model(points, faces, refine_file)
     return high, points
 
-def write_model(points, faces, outfile, direction_name):
+def write_model(points, faces, outfile):
     """
     写入模型，保存
     :param points 点云
@@ -145,16 +159,17 @@ def write_model(points, faces, outfile, direction_name):
     """
     file = open(outfile, 'w')
     for p in points:
-        if direction_name == 'd':
-            x,y,z = p[0], p[1], p[3]
-        elif direction_name == 'f':
-            x,y,z = p[0], -p[2], p[1]
-        elif direction_name == 'b':
-            x,y,z = p[0], p[2], -p[1]
-        elif direction_name == 'l':
-            x,y,z = -p[2], p[1], p[0]
-        elif direction_name == 'r':
-            x,y,z = p[2], p[1], -p[0]
+        # if direction == 0 or direction == -1:
+        #     x,y,z = p[0], p[1], p[2]
+        # elif direction == 1:
+        #     x,y,z = p[0], -p[2], p[1]
+        # elif direction == 2:
+        #     x,y,z = p[0], p[2], -p[1]
+        # elif direction == 3:
+        #     x,y,z = -p[2], p[1], p[0]
+        # elif direction == 4:
+        #     x,y,z = p[2], p[1], -p[0]
+        x,y,z = p[0], p[1], p[2]
         file.write('v ' + str(x) + ' ' + str(y) + ' ' + str(z) + '\n')
     for f in faces:
         line = 'f '
@@ -176,14 +191,102 @@ def filename_generator(filename, direction='d'):
     refine_file += prefix
     return refine_file
 
+def calc_distance(x1,y1,x2,y2):
+    return math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
+def calc_radian(x1,y1,x2,y2):
+    return math.atan((y1-y2)/(x1-x2))
+
+def calc_longest_link(floor_contour_link, points):
+    """
+    计算最长的link，输出索引tuple
+    :param floor_contour_link: 第一层的轮廓线
+    :param points:
+    :return:
+    """
+    link_distance = []
+    for link in floor_contour_link:
+        distance = calc_distance((points[link[0] - 1][0]),
+                                 points[link[0] - 1][1],
+                                 points[link[1] - 1][0],
+                                 points[link[1] - 1][1])
+        link_distance.append(distance)
+    max_index = link_distance.index(max(link_distance))
+    #print("最大距离下标：", max_index)
+    #print("最大距离link：", floor_contour_link[max_index])
+    return floor_contour_link[max_index]
+
 def run(filename, radian, direction):
     #filename = '/home/mitom/data/obj/single-plat-result.obj'
-    points, faces = parse_obj(filename, radian)
-    print(filename, radian)
+    direction_list = ['d','f', 'b', 'l', 'r']
+    if direction >= 0:
+        filename = filename_generator(filename, 's')
+    points, faces = parse_obj(filename, radian, direction)
+    if direction == -1: # 修正方向而已
+        filename = filename_generator(filename, 's')
+        write_model(points, faces, filename)
+        return 1
+    #print(filename, radian)
     height, points = get_cluster_center(points, faces, filename, direction)
-    print(height)
+    #print(height)
     return 1
+
+def get_rotation(filename):
+    points, faces = parse_obj(filename, 0, 0)
+    k = find_k(points)
+    print("k=", k)
+    height = points[:, -1].reshape(-1, 1)
+    km = KMeans(n_clusters=k)
+    km.fit(height)
+
+    high = [round(i[0], 3) for i in km.cluster_centers_]
+    # refine高度
+    height = [high[i] for i in km.labels_]
+    points[:, -1] = height
+    #print(min(high))
+    floor_height = min(high)
+    #print(points)
+    floor_points = []
+    for i in range(len(points)):
+        if points[i][2] == floor_height:
+            floor_points.append(i+1)
+    floor_faces_index = []
+    for i in range(len(faces)):
+        if set(faces[i]) <= set(floor_points):
+            floor_faces_index.append(i)
+    # print(floor_faces_index)
+
+    # 所有面的连通关系
+    floor_faces_set = []
+    for i in floor_faces_index:
+        floor_faces_set.append(faces[i])
+    connected_list = []
+    for i in range(len(floor_faces_set)):
+        for j in range(len(floor_faces_set[i])):
+            link = []
+            if j+1 <= (len(floor_faces_set[i])-1):
+                link.append(floor_faces_set[i][j])
+                link.append(floor_faces_set[i][j+1])
+                connected_list.append(link)
+        connected_list.append([floor_faces_set[i][0], floor_faces_set[i][len(floor_faces_set[i]) - 1]])
+    # print(connected_list)
+    longest_link = calc_longest_link(connected_list, points)
+
+    radian = calc_radian(points[longest_link[0]-1][0],
+                         points[longest_link[0]-1][1],
+                         points[longest_link[1]-1][0],
+                         points[longest_link[1]-1][1])
+    print("偏转角度：", radian)
+    return radian
+
+def main(filename):
+    rotation = get_rotation(filename)
+    # 生成正向高度真实的obj文件
+    run(filename, rotation, -1)
+    for i in range(5):
+        run(filename, 0, i) # 0.22285433253600082
+    return 1
+
 
 # if __name__ == "__main__":
 #     filename = '/home/mitom/data/obj/single-plat-result.obj'
-#     run(filename, 0, 0)
+#     main(filename)
