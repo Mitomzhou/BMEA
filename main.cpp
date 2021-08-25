@@ -2,17 +2,15 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <iterator>
 #include "kmeans.h"
-#include "geometry/Point.h"
 #include "geometry/PointCloud.h"
 #include "geometry/Plane.h"
 #include "geometry/PlaneSet.h"
 #include "extract_cad.h"
+#include "dxftest.h"
 
 #include<opencv2/opencv.hpp>
 #include </usr/include/python3.6/Python.h>
-//#include "Extract.h"
 
 using std::cout;
 using std::endl;
@@ -20,7 +18,7 @@ using std::endl;
 /**
  * 调用python的sklearn. kmeans聚类算法对obj文件聚类并写入obj高度
  */
-bool refineFile(char* objfile)
+bool refineFile(const char* objfile)
 {
     Py_InitializeEx(1);
     PyRun_SimpleString("import sys");
@@ -74,20 +72,22 @@ void run(const std::string& filename){
     std::cout << "CAD: " << std::endl;
     resultContour.print();
     draw_contour(resultContour, pc);
+    geometry::CADLinkSet cadlinkset = convertCoodsCADLink(resultContour, pc);
+    drawDXF("/home/mitom/single_d.dxf", cadlinkset);
 }
 
 int main() {
-    char* filename = "/home/mitom/data/obj/single-plat-result.obj";
+    const char* filename = "/home/mitom/data/obj/single-plat-result.obj";
     bool rf = refineFile(filename);
     if(!rf){
         std::cout << "聚类模块错误!" << std::endl;
         return 0;
     }
-//    run("/home/mitom/data/obj/single-plat-result_s_d.obj");  // 3
+    run("/home/mitom/data/obj/single-plat-result_s_d.obj");  // 3
 //    run("/home/mitom/data/obj/single-plat-result_s_f.obj"); // 3  y+500
-    run("/home/mitom/data/obj/single-plat-result_s_b.obj"); // 3
-//    run("/home/mitom/data/obj/single-plat-result_s_l.obj");
-//    run("/home/mitom/data/obj/single-plat-result_s_r.obj");
+//    run("/home/mitom/data/obj/single-plat-result_s_b.obj"); // 3    存在一些问题
+//    run("/home/mitom/data/obj/single-plat-result_s_l.obj");  // 3 x+500
+//    run("/home/mitom/data/obj/single-plat-result_s_r.obj");  // 3 x+500
 
     return 0;
 }

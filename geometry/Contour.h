@@ -8,6 +8,8 @@
 #include <iostream>
 #include <vector>
 #include "defines.h"
+#include "CADLink.h"
+#include "CADLinkSet.h"
 
 GEOMETRY_NAMESPACE_BEGIN
 
@@ -38,52 +40,61 @@ protected:
     std::vector<std::pair<int, int>> links;
 };
 
-
+inline
 Contour::Contour(std::vector<std::pair<int, int>> links)
 {
     this->links = links;
 }
 
+inline
 Contour::Contour(Contour const& contour)
 {
     this->links = contour.links;
 }
 
+inline
 Contour& Contour::addLink(std::pair<int, int> link)
 {
     this->links.push_back(link);
 }
 
+inline
 std::vector<std::pair<int, int>> Contour::getLinks()
 {
     return this->links;
 }
 
+inline
 int Contour::size() const
 {
     return this->links.size();
 }
 
+inline
 std::pair<int, int>& Contour::operator[] (int index)
 {
     return this->links[index];
 }
 
+inline
 std::pair<int, int> const& Contour::operator[] (int index) const
 {
     return this->links[index];
 }
 
+inline
 std::pair<int, int>& Contour::operator() (int index)
 {
     return this->links[index];
 }
 
+inline
 std::pair<int, int> const& Contour::operator() (int index) const
 {
     return this->links[index];
 }
 
+inline
 void Contour::print()
 {
     std::cout << "== contour ==" << this->links.size() << std::endl;

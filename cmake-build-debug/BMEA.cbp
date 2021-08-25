@@ -138,6 +138,51 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_attributes.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_codes.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_creationadapter.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_creationinterface.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_dxf.cpp">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_dxf.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_entities.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_exception.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_extrusion.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_global.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_writer.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_writer_ascii.cpp">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxf/dl_writer_ascii.h">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxftest.cpp">
+			<Option target="BMEA"/>
+		</Unit>
+		<Unit filename="/home/mitom/Music/BMEA/dxftest.h">
+			<Option target="BMEA"/>
+		</Unit>
 		<Unit filename="/home/mitom/Music/BMEA/extract_cad.h">
 			<Option target="BMEA"/>
 		</Unit>

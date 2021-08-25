@@ -374,7 +374,7 @@ void draw_contour(geometry::Contour& contour, geometry::PointCloud& pc)
             x1 *= slace; y1 *= slace; x2 *= slace; y2 *= slace;
         }
         if(false){
-            x1 += 0; y1 += 500; x2 += 0; y2 += 500;
+            x1 += 500; y1 += 0; x2 += 500; y2 += 0;
         }
 //        std::cout << x1 << ", "<< y1 << ", "<< x2 << ", "<< y2 << std::endl;
         cv::Point2d p1 = cv::Point2d(x1, y1);

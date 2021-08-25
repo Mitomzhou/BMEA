@@ -42,6 +42,7 @@ protected:
     PointSet pointset;
 };
 
+inline
 PointCloud::PointCloud(const std::string& objfile) {
     std::ifstream ifs;
     ifs.open(objfile.data());
@@ -58,18 +59,21 @@ PointCloud::PointCloud(const std::string& objfile) {
     ifs.close();
 }
 
+inline
 PointCloud& PointCloud::addPoint(double x, double y, double z)
 {
     this->pointset.push_back(Point(x, y, z));
     return *this;
 }
 
+inline
 PointCloud& PointCloud::addPoint(const Point & point)
 {
     this->pointset.push_back(point);
     return *this;
 }
 
+inline
 std::vector<double> PointCloud::getXCol() const
 {
     std::vector<double> xcol;
@@ -79,6 +83,7 @@ std::vector<double> PointCloud::getXCol() const
     return xcol;
 }
 
+inline
 std::vector<double> PointCloud::getYCol() const
 {
     std::vector<double> ycol;
@@ -88,6 +93,7 @@ std::vector<double> PointCloud::getYCol() const
     return ycol;
 }
 
+inline
 std::vector<double> PointCloud::getZCol() const
 {
     std::vector<double> zcol;
@@ -97,35 +103,42 @@ std::vector<double> PointCloud::getZCol() const
     return zcol;
 }
 
+inline
 int PointCloud::size() const {
     return pointset.size();
 }
 
+inline
 std::vector<Point> PointCloud::getPointSet() const
 {
     return this->pointset;
 }
 
+inline
 Point& PointCloud::operator[] (int index)
 {
     return this->pointset[index];
 }
 
+inline
 Point const& PointCloud::operator[] (int index) const
 {
     return this->pointset[index];
 }
 
+inline
 Point& PointCloud::operator() (int index)
 {
     return this->pointset[index];
 }
 
+inline
 Point const& PointCloud::operator() (int index) const
 {
     return this->pointset[index];
 }
 
+inline
 void PointCloud::print(){
     std::cout << "== point cloud ==" << std::endl;
     for(int i=0; i<this->pointset.size(); i++){

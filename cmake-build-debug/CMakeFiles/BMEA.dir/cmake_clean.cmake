@@ -1,6 +1,9 @@
 file(REMOVE_RECURSE
   "BMEA"
   "BMEA.pdb"
+  "CMakeFiles/BMEA.dir/dxf/dl_dxf.cpp.o"
+  "CMakeFiles/BMEA.dir/dxf/dl_writer_ascii.cpp.o"
+  "CMakeFiles/BMEA.dir/dxftest.cpp.o"
   "CMakeFiles/BMEA.dir/main.cpp.o"
 )
 

@@ -31,27 +31,32 @@ protected:
     double z;
 };
 
+inline
 Point::Point(Point const& other) {
     this->x = other.x;
     this->y = other.y;
     this->z = other.z;
 }
 
+inline
 void Point::setX(const double& xv)
 {
     this->x = xv;
 }
 
+inline
 void Point::setY(const double& yv)
 {
     this->y = yv;
 }
 
+inline
 void Point::setZ(const double& zv)
 {
     this->z = zv;
 }
 
+inline
 void Point::print() {
     std::cout << "Point (" << x << ", " << y << ", " << z << ")" << std::endl;
 }

@@ -156,6 +156,87 @@ util/fast:
 	$(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/build
 .PHONY : util/fast
 
+dxf/dl_dxf.o: dxf/dl_dxf.cpp.o
+
+.PHONY : dxf/dl_dxf.o
+
+# target to build an object file
+dxf/dl_dxf.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxf/dl_dxf.cpp.o
+.PHONY : dxf/dl_dxf.cpp.o
+
+dxf/dl_dxf.i: dxf/dl_dxf.cpp.i
+
+.PHONY : dxf/dl_dxf.i
+
+# target to preprocess a source file
+dxf/dl_dxf.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxf/dl_dxf.cpp.i
+.PHONY : dxf/dl_dxf.cpp.i
+
+dxf/dl_dxf.s: dxf/dl_dxf.cpp.s
+
+.PHONY : dxf/dl_dxf.s
+
+# target to generate assembly for a file
+dxf/dl_dxf.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxf/dl_dxf.cpp.s
+.PHONY : dxf/dl_dxf.cpp.s
+
+dxf/dl_writer_ascii.o: dxf/dl_writer_ascii.cpp.o
+
+.PHONY : dxf/dl_writer_ascii.o
+
+# target to build an object file
+dxf/dl_writer_ascii.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxf/dl_writer_ascii.cpp.o
+.PHONY : dxf/dl_writer_ascii.cpp.o
+
+dxf/dl_writer_ascii.i: dxf/dl_writer_ascii.cpp.i
+
+.PHONY : dxf/dl_writer_ascii.i
+
+# target to preprocess a source file
+dxf/dl_writer_ascii.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxf/dl_writer_ascii.cpp.i
+.PHONY : dxf/dl_writer_ascii.cpp.i
+
+dxf/dl_writer_ascii.s: dxf/dl_writer_ascii.cpp.s
+
+.PHONY : dxf/dl_writer_ascii.s
+
+# target to generate assembly for a file
+dxf/dl_writer_ascii.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxf/dl_writer_ascii.cpp.s
+.PHONY : dxf/dl_writer_ascii.cpp.s
+
+dxftest.o: dxftest.cpp.o
+
+.PHONY : dxftest.o
+
+# target to build an object file
+dxftest.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxftest.cpp.o
+.PHONY : dxftest.cpp.o
+
+dxftest.i: dxftest.cpp.i
+
+.PHONY : dxftest.i
+
+# target to preprocess a source file
+dxftest.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxftest.cpp.i
+.PHONY : dxftest.cpp.i
+
+dxftest.s: dxftest.cpp.s
+
+.PHONY : dxftest.s
+
+# target to generate assembly for a file
+dxftest.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BMEA.dir/build.make CMakeFiles/BMEA.dir/dxftest.cpp.s
+.PHONY : dxftest.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -193,6 +274,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... BMEA"
 	@echo "... util"
+	@echo "... dxf/dl_dxf.o"
+	@echo "... dxf/dl_dxf.i"
+	@echo "... dxf/dl_dxf.s"
+	@echo "... dxf/dl_writer_ascii.o"
+	@echo "... dxf/dl_writer_ascii.i"
+	@echo "... dxf/dl_writer_ascii.s"
+	@echo "... dxftest.o"
+	@echo "... dxftest.i"
+	@echo "... dxftest.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
