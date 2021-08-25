@@ -60,6 +60,8 @@ bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<i
 std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& multlayerPolygensContour,
                                  const geometry::PointCloud& pc, std::vector<std::pair<int,int>>& verticalMergeTuples);
 
+void refineLine(geometry::Contour& contour, const geometry::PointCloud& pc);
+
 
 /**
  * 提取cad的主体函数
@@ -160,6 +162,9 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
             cadcontour.addLink(link);
         }
     }
+
+    // 改进 line TODO
+    refineLine(cadcontour, pc);
     return cadcontour;
 }
 
@@ -584,5 +589,34 @@ std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& mul
     return innerPointsIndex;
 }
 
+/**
+ * 拉直直线
+ * @param contour
+ * @param pc
+ */
+void refineLine(geometry::Contour& contour, const geometry::PointCloud& pc)
+{
+    std::vector<std::pair<int, int>> links = contour.getLinks();
+    std::vector<int> pointsIndex;              // 所有点下标
+    std::vector<int> twoConnectionPointsIndex; // 仅有2个连通域的点
+    for (auto link : links){
+        pointsIndex.push_back(link.first);
+        pointsIndex.push_back(link.second);
+    }
+    std::vector<int> uniquePoints = pointsIndex;
+    util::doUnique(uniquePoints);
+    for(auto point : uniquePoints){
+        int count = std::count(pointsIndex.begin(), pointsIndex.end(), point);
+        if(count == 2){
+            twoConnectionPointsIndex.push_back(point);
+        }
+    }
+
+    std::cout << "2个连通域-------------------" << std::endl;
+    for (auto p : twoConnectionPointsIndex){
+        std::cout << p << ", ";
+    }
+    std::cout << std::endl;
+}
 
 #endif //BMEA_EXTRACT_CAD_H
