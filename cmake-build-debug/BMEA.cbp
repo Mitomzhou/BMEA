@@ -195,10 +195,10 @@
 		<Unit filename="/home/mitom/Music/BMEA/main.cpp">
 			<Option target="BMEA"/>
 		</Unit>
-		<Unit filename="/home/mitom/Music/BMEA/util/math.cpp">
+		<Unit filename="/home/mitom/Music/BMEA/util/mathop.cpp">
 			<Option target="util"/>
 		</Unit>
-		<Unit filename="/home/mitom/Music/BMEA/util/math.h">
+		<Unit filename="/home/mitom/Music/BMEA/util/mathop.h">
 			<Option target="util"/>
 		</Unit>
 		<Unit filename="/home/mitom/Music/BMEA/util/string_util.cpp">

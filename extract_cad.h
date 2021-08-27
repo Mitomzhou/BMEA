@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <math.h>
 
 #include<opencv2/opencv.hpp>
 
@@ -17,7 +18,7 @@
 #include "./geometry/PointCloud.h"
 #include "./geometry/PlaneSet.h"
 #include "./geometry/Contour.h"
-#include "./util/math.h"
+#include "./util/mathop.h"
 
 #include "./geometry/defines.h"
 
@@ -60,8 +61,9 @@ bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<i
 std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& multlayerPolygensContour,
                                  const geometry::PointCloud& pc, std::vector<std::pair<int,int>>& verticalMergeTuples);
 
-void refineLine(geometry::Contour& contour, const geometry::PointCloud& pc);
+geometry::Contour refineLine(geometry::Contour& contour, const geometry::PointCloud& pc);
 
+double calcLineAngle(int commonPoint, int p1, int p2, const geometry::PointCloud& pc);
 
 /**
  * 提取cad的主体函数
@@ -115,7 +117,7 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
 
         // 得到单层轮廓线
         geometry::Contour contour = connectContour(layerps);
-        //draw_contour(contour, pc);
+        // draw_contour(contour, pc);
 
         //if(非俯视图) // TODO
         if(contour.getLinks().size() != 0){
@@ -146,10 +148,10 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
     // std::cout << std::endl;
     //draw_contour(result, pc);
 
-    std::cout << "内点:" << std::endl;
+    // std::cout << "内点:" << std::endl;
     std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples);
-    for(auto p : innerPointsIndex)  std::cout << p << ",";
-    std::cout << std::endl;
+    // for(auto p : innerPointsIndex)  std::cout << p << ",";
+    // std::cout << std::endl;
 
     // 内点在result link中就去除
     geometry::Contour cadcontour;
@@ -162,10 +164,12 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
             cadcontour.addLink(link);
         }
     }
-
-    // 改进 line TODO
-    refineLine(cadcontour, pc);
-    return cadcontour;
+    // 这里做3次refine，一次不能把所有点全部拉直
+    geometry::Contour firstRefineContour = refineLine(cadcontour, pc);
+    geometry::Contour secondRefineContour = refineLine(firstRefineContour, pc);
+    geometry::Contour thirdRefineContour = refineLine(secondRefineContour, pc);
+    // geometry::Contour forthRefineContour = refineLine(thirdRefineContour, pc);
+    return thirdRefineContour;
 }
 
 
@@ -381,6 +385,9 @@ void draw_contour(geometry::Contour& contour, geometry::PointCloud& pc)
         if(false){
             x1 += 500; y1 += 0; x2 += 500; y2 += 0;
         }
+        if(true){
+            x1 += 0; y1 += 500; x2 += 0; y2 += 500;
+        }
 //        std::cout << x1 << ", "<< y1 << ", "<< x2 << ", "<< y2 << std::endl;
         cv::Point2d p1 = cv::Point2d(x1, y1);
         cv::Point2d p2 = cv::Point2d(x2, y2) ;
@@ -594,7 +601,7 @@ std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& mul
  * @param contour
  * @param pc
  */
-void refineLine(geometry::Contour& contour, const geometry::PointCloud& pc)
+geometry::Contour refineLine(geometry::Contour& contour, const geometry::PointCloud& pc)
 {
     std::vector<std::pair<int, int>> links = contour.getLinks();
     std::vector<int> pointsIndex;              // 所有点下标
@@ -612,11 +619,82 @@ void refineLine(geometry::Contour& contour, const geometry::PointCloud& pc)
         }
     }
 
-    std::cout << "2个连通域-------------------" << std::endl;
-    for (auto p : twoConnectionPointsIndex){
-        std::cout << p << ", ";
+    // std::cout << "2个连通域-------------------" << std::endl;
+    // for (auto p : twoConnectionPointsIndex){
+    //    std::cout << p << ", ";
+    // }
+    // std::cout << std::endl;
+
+    geometry::Contour mergeContour;  //合并contour
+    std::vector<int> tmppoint;   //
+    std::vector<int> hiddenpoint; // 隐藏点
+
+    for(auto p : twoConnectionPointsIndex) {
+        std::vector<int> mergelink;
+        for(auto link : contour.getLinks()) {
+            if (!util::contain_i(tmppoint, p)){
+                if (p == link.first) {
+                    mergelink.push_back(link.second);
+                }else if(p == link.second){
+                    mergelink.push_back(link.first);
+                }
+                if(mergelink.size() == 2){
+                    double cos = calcLineAngle(p, mergelink[0], mergelink[1], pc);
+                    if (cos >= 0.965925826289 && cos <= 1){ // cos 10度 = 0.984807753   cos 15 =0.965925826289
+                        mergeContour.addLink(std::make_pair(mergelink[0], mergelink[1]));
+                        hiddenpoint.push_back(p);
+                        tmppoint.push_back(p);
+                        tmppoint.push_back(mergelink[0]);
+                        tmppoint.push_back(mergelink[1]);
+                    }
+                }
+            }
+        }
     }
-    std::cout << std::endl;
+
+    // std::cout << "合并contour" << std::endl;
+    // mergeContour.print();
+    // std::cout << "隐藏点" << std::endl;
+    //for(auto p : hiddenpoint)  std::cout << p << ",";
+    // std::cout << std::endl;
+
+    // 去除所有包含中间公共点的link，添加合并后的link
+    geometry::Contour refineContour;
+    for (auto link : contour.getLinks()){
+        if (!(util::contain_i(hiddenpoint, link.first) || util::contain_i(hiddenpoint, link.second))){
+            refineContour.addLink(link);
+        }
+    }
+    for (auto link : mergeContour.getLinks()){
+        refineContour.addLink(link);
+    }
+    // std::cout << "优化后 refine contour:" << std::endl;
+    // refineContour.print();
+    return refineContour;
+}
+
+/**
+ *
+ * @param commonPoint
+ * @param p1
+ * @param p2
+ * @param pc
+ * @return cos
+ */
+double calcLineAngle(int commonPoint, int p1, int p2, const geometry::PointCloud& pc)
+{
+    double comX = pc.getPointSet()[commonPoint].getX();
+    double comY = pc.getPointSet()[commonPoint].getY();
+    double p1X = pc.getPointSet()[p1].getX();
+    double p1Y = pc.getPointSet()[p1].getY();
+    double p2X = pc.getPointSet()[p2].getX();
+    double p2Y = pc.getPointSet()[p2].getY();
+    // v-a v-b
+    double ax = comX - p1X;
+    double ay = comY - p1Y;
+    double bx = p2X - comX;
+    double by = p2Y - comY;
+    return (ax * bx + ay * by) / (sqrt(ax * ax + ay * ay) * sqrt(bx * bx + by * by));
 }
 
 #endif //BMEA_EXTRACT_CAD_H

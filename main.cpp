@@ -31,13 +31,13 @@ bool refineFile(const char* objfile)
     }
     std::cout << "Python get module succeed." << std::endl;
 
-    PyObject* pfun = PyObject_GetAttrString(pModule, "main");
+    PyObject* pfun = PyObject_GetAttrString(pModule, "run");
     // 参数解释：https://blog.csdn.net/mkc1989/article/details/38943927
     PyObject *pArgs = PyTuple_New(1);
     PyTuple_SetItem(pArgs, 0, Py_BuildValue("s", objfile));
 
     if (!pfun || !PyCallable_Check(pfun)){
-        std::cout << "Can't find funftion (main)" << std::endl;
+        std::cout << "Can't find funftion (run)" << std::endl;
         return false;
     }
     PyObject *pReturn = PyEval_CallObject(pfun, pArgs);
@@ -71,9 +71,12 @@ void run(const std::string& filename){
     geometry::Contour resultContour = extract(height_v, pc, ps);
     std::cout << "CAD: " << std::endl;
     resultContour.print();
-    draw_contour(resultContour, pc);
+    //draw_contour(resultContour, pc);
     geometry::CADLinkSet cadlinkset = convertCoodsCADLink(resultContour, pc);
-    drawDXF("/home/mitom/single_d.dxf", cadlinkset);
+    std::string outdxf = util::replaceSuffix(filename, ".dxf");
+    const char* dxfname = outdxf.c_str();
+    std::cout << util::replaceSuffix(filename, ".dxf") << std::endl;
+    drawDXF(dxfname, cadlinkset);
 }
 
 int main() {
@@ -83,11 +86,11 @@ int main() {
         std::cout << "聚类模块错误!" << std::endl;
         return 0;
     }
-    run("/home/mitom/data/obj/single-plat-result_s_d.obj");  // 3
-//    run("/home/mitom/data/obj/single-plat-result_s_f.obj"); // 3  y+500
-//    run("/home/mitom/data/obj/single-plat-result_s_b.obj"); // 3    存在一些问题
-//    run("/home/mitom/data/obj/single-plat-result_s_l.obj");  // 3 x+500
-//    run("/home/mitom/data/obj/single-plat-result_s_r.obj");  // 3 x+500
+
+    std::vector<std::string> direction_v = {"d","f","b","l","r"};
+    for(auto direction : direction_v){
+        run(util::addtoFilename(filename, direction));
+    }
 
     return 0;
 }

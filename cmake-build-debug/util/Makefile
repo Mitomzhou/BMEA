@@ -145,32 +145,32 @@ util/fast:
 	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/build
 .PHONY : util/fast
 
-math.o: math.cpp.o
+mathop.o: mathop.cpp.o
 
-.PHONY : math.o
+.PHONY : mathop.o
 
 # target to build an object file
-math.cpp.o:
-	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.o
-.PHONY : math.cpp.o
+mathop.cpp.o:
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/mathop.cpp.o
+.PHONY : mathop.cpp.o
 
-math.i: math.cpp.i
+mathop.i: mathop.cpp.i
 
-.PHONY : math.i
+.PHONY : mathop.i
 
 # target to preprocess a source file
-math.cpp.i:
-	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.i
-.PHONY : math.cpp.i
+mathop.cpp.i:
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/mathop.cpp.i
+.PHONY : mathop.cpp.i
 
-math.s: math.cpp.s
+mathop.s: mathop.cpp.s
 
-.PHONY : math.s
+.PHONY : mathop.s
 
 # target to generate assembly for a file
-math.cpp.s:
-	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/math.cpp.s
-.PHONY : math.cpp.s
+mathop.cpp.s:
+	cd /home/mitom/Music/BMEA/cmake-build-debug && $(MAKE) $(MAKESILENT) -f util/CMakeFiles/util.dir/build.make util/CMakeFiles/util.dir/mathop.cpp.s
+.PHONY : mathop.cpp.s
 
 string_util.o: string_util.cpp.o
 
@@ -208,9 +208,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... util"
-	@echo "... math.o"
-	@echo "... math.i"
-	@echo "... math.s"
+	@echo "... mathop.o"
+	@echo "... mathop.i"
+	@echo "... mathop.s"
 	@echo "... string_util.o"
 	@echo "... string_util.i"
 	@echo "... string_util.s"

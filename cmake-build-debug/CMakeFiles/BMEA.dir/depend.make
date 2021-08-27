@@ -58,7 +58,7 @@ CMakeFiles/BMEA.dir/main.cpp.o: ../geometry/defines.h
 CMakeFiles/BMEA.dir/main.cpp.o: ../kmeans.h
 CMakeFiles/BMEA.dir/main.cpp.o: ../kmeans_oop.h
 CMakeFiles/BMEA.dir/main.cpp.o: ../main.cpp
-CMakeFiles/BMEA.dir/main.cpp.o: ../util/math.h
+CMakeFiles/BMEA.dir/main.cpp.o: ../util/mathop.h
 CMakeFiles/BMEA.dir/main.cpp.o: ../util/string_util.h
 CMakeFiles/BMEA.dir/main.cpp.o: /usr/include/python3.6/Python.h
 CMakeFiles/BMEA.dir/main.cpp.o: /usr/include/python3.6/abstract.h

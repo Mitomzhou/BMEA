@@ -1,24 +1,27 @@
 import numpy as np
-import math
 from sklearn.cluster import KMeans
-
 import sys
-if 'threading' in sys.modules:
-    del sys.modules['threading']
+import cv2
+import math
 
-def calc_deflection_point(x, y, radian):
+
+def get_pc(filename):
     """
-    计算旋转radian后的点
-    :param x:
-    :param y:
-    :param radian: 旋转弧度
+    获取点云
+    :param filename:
     :return:
     """
-    update_x = x * math.cos(radian) + y * math.sin(radian)
-    update_y = -x * math.sin(radian) + y * math.cos(radian)
-    return update_x, update_y
+    f = open(filename)
+    points = f.read()
+    f.close()
+    points = points.split('\n')
+    points = [i.split() for i in points if 'v ' in i]
+    points = [[eval(ii) for ii in i[1:]] for i in points]
+    # print(points)
+    return np.array(points)
 
-def parse_obj(filename, radian, direction):
+
+def parse_obj(filename):
     """
     get points and faces
         注意，faces中间保存是文件中点的下标
@@ -26,34 +29,12 @@ def parse_obj(filename, radian, direction):
     :return: np.array的点云 list的面
     """
     f = open(filename)
-    pointfile = f.read()
+    points = f.read()
     f.close()
-    lines = pointfile.split('\n')
-    pointfile = [i.split() for i in lines if 'v ' in i]
-    points = []
-    for i in range(len(pointfile)):
-        point = []
-        a = eval(pointfile[i][1])
-        b = eval(pointfile[i][2])
-        c = eval(pointfile[i][3])
-        # 旋转点
-        a, b = calc_deflection_point(a, b, radian)
-        if direction == 0 or direction == -1:
-            x,y,z = a, b, c
-        elif direction == 1:
-            x,y,z = a, -c, b
-        elif direction == 2:
-            x,y,z = a, c, -b
-        elif direction == 3:
-            x,y,z = -c, b, a
-        elif direction == 4:
-            x,y,z = c, b, -a
-        else:
-            x,y,z = a, b, c
-        point.append(x)
-        point.append(y)
-        point.append(z)
-        points.append(point)
+    lines = points.split('\n')
+    points = [i.split() for i in lines if 'v ' in i]
+    points = [[eval(ii) for ii in i[1:]] for i in points]
+
     faces = [i.split() for i in lines if 'f ' in i]
     faces = [[eval(ii) for ii in i[1:]] for i in faces]
     print("点数：", len(points))
@@ -62,6 +43,25 @@ def parse_obj(filename, radian, direction):
 
 def mean_unsim(data_other_same, i_data):
     return np.sqrt(((data_other_same - i_data) ** 2).sum(axis=1)).mean()
+
+def calc_distance(x1,y1,x2,y2):
+    return math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
+
+def calc_radian(x1,y1,x2,y2):
+    return math.atan((y1-y2)/(x1-x2))
+
+def filename_generator(filename, direction='d'):
+    """
+    文件名称生成器
+    :param filename:
+    :param direction: d l r f b
+    :return:
+    """
+    file_path_list = filename.split("/")
+    refine_file = "/".join(file_path_list[:-1])
+    prefix = "/" + file_path_list[len(file_path_list) - 1][:-4] + "_" + direction + ".obj"
+    refine_file += prefix
+    return refine_file
 
 
 def calc_performance(data, result):
@@ -123,12 +123,45 @@ def find_k(points):
     return c_num[np.argmax(pf_ls)]
 
 
-def get_cluster_center(points, faces, filename, direction):
+def  get_cluster_center(filename, points, faces, rotation, direction):
     """
     获取聚类中心（精确到后三位）,并重新跟新点云points
     :param points:
     :return:
     """
+    if direction == -1: # 校正方向
+        # 旋转
+        for i in range(len(points)):
+            points[i][0], points[i][1] = calc_deflection_point(points[i][0], points[i][1], rotation)  # 0.22285433253600082
+    if direction == 0:
+        pass
+    elif direction > 0:
+        x, y, z = 0, 0, 0
+        if direction == 1:
+            for i in range(len(points)):
+                x = points[i][0]
+                y = points[i][1]
+                z = points[i][2]
+                points[i][0], points[i][1], points[i][2] = x, -z, y
+        if direction == 2:
+            for i in range(len(points)):
+                x = points[i][0]
+                y = points[i][1]
+                z = points[i][2]
+                points[i][0], points[i][1], points[i][2] = x, z, -y
+        if direction == 3:
+            for i in range(len(points)):
+                x = points[i][0]
+                y = points[i][1]
+                z = points[i][2]
+                points[i][0], points[i][1], points[i][2] = -z, y, x
+        if direction == 4:
+            for i in range(len(points)):
+                x = points[i][0]
+                y = points[i][1]
+                z = points[i][2]
+                points[i][0], points[i][1], points[i][2] = z, y, -x
+
     k = find_k(points)
     print("k=", k)
     height = points[:, -1].reshape(-1, 1)
@@ -137,64 +170,26 @@ def get_cluster_center(points, faces, filename, direction):
 
     high = [round(i[0], 3) for i in km.cluster_centers_]
     # refine高度
-    if direction != -1:
-        height = [high[i] for i in km.labels_]
-        points[:, -1] = height
+    height = [high[i] for i in km.labels_]
+    points[:, -1] = height
     high.sort()
     print("聚类中心：", high)
-    direction_name = ['d','f','b','l','r']
-    if direction == -1:
-        refine_file = filename  # 修正方向替换本身的文件，不用重命名其他文件名称
-    else:
-        refine_file = filename_generator(filename, direction_name[direction])
-    write_model(points, faces, refine_file)
+    suffix_list = ['s','d','f','b','l','r']
+    write_model(points, faces, filename_generator(filename, suffix_list[direction+1]))
+
     return high, points
 
-def write_model(points, faces, outfile):
+def calc_deflection_point(x, y, radian):
     """
-    写入模型，保存
-    :param points 点云
-    :param outfile: 输出的OBJ，可以是全路径或相对路径
+    计算旋转radian后的点
+    :param x:
+    :param y:
+    :param radian: 旋转弧度
     :return:
     """
-    file = open(outfile, 'w')
-    for p in points:
-        # if direction == 0 or direction == -1:
-        #     x,y,z = p[0], p[1], p[2]
-        # elif direction == 1:
-        #     x,y,z = p[0], -p[2], p[1]
-        # elif direction == 2:
-        #     x,y,z = p[0], p[2], -p[1]
-        # elif direction == 3:
-        #     x,y,z = -p[2], p[1], p[0]
-        # elif direction == 4:
-        #     x,y,z = p[2], p[1], -p[0]
-        x,y,z = p[0], p[1], p[2]
-        file.write('v ' + str(x) + ' ' + str(y) + ' ' + str(z) + '\n')
-    for f in faces:
-        line = 'f '
-        for i in f:
-            line = line + str(i) + ' '
-        file.write(line + '\n')
-    file.close()
-
-def filename_generator(filename, direction='d'):
-    """
-    文件名称生成器
-    :param filename:
-    :param direction: d l r f b
-    :return:
-    """
-    file_path_list = filename.split("/")
-    refine_file = "/".join(file_path_list[:-1])
-    prefix = "/" + file_path_list[len(file_path_list) - 1][:-4] + "_" + direction + ".obj"
-    refine_file += prefix
-    return refine_file
-
-def calc_distance(x1,y1,x2,y2):
-    return math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
-def calc_radian(x1,y1,x2,y2):
-    return math.atan((y1-y2)/(x1-x2))
+    update_x = x * math.cos(radian) + y * math.sin(radian)
+    update_y = -x * math.sin(radian) + y * math.cos(radian)
+    return update_x, update_y
 
 def calc_longest_link(floor_contour_link, points):
     """
@@ -206,32 +201,38 @@ def calc_longest_link(floor_contour_link, points):
     link_distance = []
     for link in floor_contour_link:
         distance = calc_distance((points[link[0] - 1][0]),
-                                 points[link[0] - 1][1],
-                                 points[link[1] - 1][0],
-                                 points[link[1] - 1][1])
+                      points[link[0] - 1][1],
+                      points[link[1] - 1][0],
+                      points[link[1] - 1][1])
         link_distance.append(distance)
     max_index = link_distance.index(max(link_distance))
-    #print("最大距离下标：", max_index)
-    #print("最大距离link：", floor_contour_link[max_index])
+    print("最大距离下标：", max_index)
+    print("最大距离link：", floor_contour_link[max_index])
     return floor_contour_link[max_index]
 
-def run(filename, radian, direction):
-    #filename = '/home/mitom/data/obj/single-plat-result.obj'
-    direction_list = ['d','f', 'b', 'l', 'r']
-    if direction >= 0:
-        filename = filename_generator(filename, 's')
-    points, faces = parse_obj(filename, radian, direction)
-    if direction == -1: # 修正方向而已
-        filename = filename_generator(filename, 's')
-        write_model(points, faces, filename)
-        return 1
-    #print(filename, radian)
-    height, points = get_cluster_center(points, faces, filename, direction)
-    #print(height)
-    return 1
+
+def write_model(points, faces, outfile):
+    """
+    写入模型，保存
+    :param points 点云
+    :param outfile: 输出的OBJ，可以是全路径或相对路径
+    :return:
+    """
+    file = open(outfile, 'w')
+    for p in points:
+        file.write('v ' + str(p[0]) + ' ' + str(p[1]) + ' ' + str(p[2]) + '\n')
+    for f in faces:
+        line = 'f '
+        for i in f:
+            line = line + str(i) + ' '
+        file.write(line + '\n')
+    file.close()
+
+
+
 
 def get_rotation(filename):
-    points, faces = parse_obj(filename, 0, 0)
+    points, faces = parse_obj(filename)
     k = find_k(points)
     print("k=", k)
     height = points[:, -1].reshape(-1, 1)
@@ -278,15 +279,17 @@ def get_rotation(filename):
     print("偏转角度：", radian)
     return radian
 
-def main(filename):
+def run(filename):
+    # 获取旋转角度
     rotation = get_rotation(filename)
-    # 生成正向高度真实的obj文件
-    run(filename, rotation, -1)
+    print(rotation)
+    # 获取旋转后的模型
+    points, faces = parse_obj(filename)
+    get_cluster_center(filename, points, faces, rotation, -1)
     for i in range(5):
-        run(filename, 0, i) # 0.22285433253600082
+        points, faces = parse_obj(filename_generator(filename, 's'))
+        get_cluster_center(filename, points, faces, rotation, i)
     return 1
 
-
-# if __name__ == "__main__":
-#     filename = '/home/mitom/data/obj/single-plat-result.obj'
-#     main(filename)
+if __name__ == "__main__":
+    run()

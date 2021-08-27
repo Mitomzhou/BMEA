@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/util.dir/math.cpp.o"
+  "CMakeFiles/util.dir/mathop.cpp.o"
   "CMakeFiles/util.dir/string_util.cpp.o"
   "libutil.a"
   "libutil.pdb"

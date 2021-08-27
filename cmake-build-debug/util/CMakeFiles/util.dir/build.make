@@ -90,29 +90,29 @@ util/CMakeFiles/util.dir/string_util.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/util.dir/string_util.cpp.s"
 	cd /home/mitom/Music/BMEA/cmake-build-debug/util && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/mitom/Music/BMEA/util/string_util.cpp -o CMakeFiles/util.dir/string_util.cpp.s
 
-util/CMakeFiles/util.dir/math.cpp.o: util/CMakeFiles/util.dir/flags.make
-util/CMakeFiles/util.dir/math.cpp.o: ../util/math.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mitom/Music/BMEA/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object util/CMakeFiles/util.dir/math.cpp.o"
-	cd /home/mitom/Music/BMEA/cmake-build-debug/util && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/util.dir/math.cpp.o -c /home/mitom/Music/BMEA/util/math.cpp
+util/CMakeFiles/util.dir/mathop.cpp.o: util/CMakeFiles/util.dir/flags.make
+util/CMakeFiles/util.dir/mathop.cpp.o: ../util/mathop.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mitom/Music/BMEA/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object util/CMakeFiles/util.dir/mathop.cpp.o"
+	cd /home/mitom/Music/BMEA/cmake-build-debug/util && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/util.dir/mathop.cpp.o -c /home/mitom/Music/BMEA/util/mathop.cpp
 
-util/CMakeFiles/util.dir/math.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/util.dir/math.cpp.i"
-	cd /home/mitom/Music/BMEA/cmake-build-debug/util && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/mitom/Music/BMEA/util/math.cpp > CMakeFiles/util.dir/math.cpp.i
+util/CMakeFiles/util.dir/mathop.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/util.dir/mathop.cpp.i"
+	cd /home/mitom/Music/BMEA/cmake-build-debug/util && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/mitom/Music/BMEA/util/mathop.cpp > CMakeFiles/util.dir/mathop.cpp.i
 
-util/CMakeFiles/util.dir/math.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/util.dir/math.cpp.s"
-	cd /home/mitom/Music/BMEA/cmake-build-debug/util && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/mitom/Music/BMEA/util/math.cpp -o CMakeFiles/util.dir/math.cpp.s
+util/CMakeFiles/util.dir/mathop.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/util.dir/mathop.cpp.s"
+	cd /home/mitom/Music/BMEA/cmake-build-debug/util && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/mitom/Music/BMEA/util/mathop.cpp -o CMakeFiles/util.dir/mathop.cpp.s
 
 # Object files for target util
 util_OBJECTS = \
 "CMakeFiles/util.dir/string_util.cpp.o" \
-"CMakeFiles/util.dir/math.cpp.o"
+"CMakeFiles/util.dir/mathop.cpp.o"
 
 # External object files for target util
 util_EXTERNAL_OBJECTS =
 
 util/libutil.a: util/CMakeFiles/util.dir/string_util.cpp.o
-util/libutil.a: util/CMakeFiles/util.dir/math.cpp.o
+util/libutil.a: util/CMakeFiles/util.dir/mathop.cpp.o
 util/libutil.a: util/CMakeFiles/util.dir/build.make
 util/libutil.a: util/CMakeFiles/util.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/mitom/Music/BMEA/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library libutil.a"

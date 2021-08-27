@@ -5,6 +5,7 @@
 #ifndef BMEA_STRING_UTIL_H
 #define BMEA_STRING_UTIL_H
 
+#include <string>
 #include "defines.h"
 
 UTIL_NAMESPACE_BEGIN
@@ -23,6 +24,9 @@ double stod(std::string str);
 std::string& trim(std::string &s);
 
 std::string addtoFilename(std::string filename, const std::string& tag);
+
+/* 替换文件后缀名 */
+std::string replaceSuffix(const std::string& filename,  const std::string& suffix);
 
 UTIL_NAMESPACE_END
 

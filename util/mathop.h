@@ -2,8 +2,8 @@
 // Created by mitom on 8/11/21.
 //
 
-#ifndef BMEA_MATH_H
-#define BMEA_MATH_H
+#ifndef BMEA_MATHOP_H
+#define BMEA_MATHOP_H
 
 #include "defines.h"
 
@@ -51,4 +51,4 @@ void remove(std::vector<int>& vec, int index);
 
 UTIL_NAMESPACE_END
 
-#endif //BMEA_MATH_H
+#endif //BMEA_MATHOP_H

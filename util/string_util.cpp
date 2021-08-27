@@ -83,5 +83,17 @@ std::string addtoFilename(std::string filename, const std::string& tag)
     return filename;
 }
 
+std::string replaceSuffix(const std::string& filename,  const std::string& suffix)
+{
+    std::string str = "";
+    std::vector<std::string> str_v = util::boostsplit(filename, ".");
+    for (int i=0; i<str_v.size(); i++){
+        if(i != str_v.size() - 1){
+            str += str_v[i];
+        }
+    }
+    return str + suffix;
+}
+
 
 UTIL_NAMESPACE_END

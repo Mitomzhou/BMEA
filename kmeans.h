@@ -9,7 +9,7 @@
 #include "kmeans_oop.h"
 #include "./geometry/PointCloud.h"
 #include "./util/string_util.h"
-#include "./util/math.h"
+#include "./util/mathop.h"
 using std::cin;
 using std::cout;
 using std::initializer_list;
