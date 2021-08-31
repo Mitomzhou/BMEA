@@ -41,6 +41,23 @@ bool contain_i(std::vector<int> src, int item)
     return std::count(src.begin(), src.end(), item);
 }
 
+bool contain_vv(const std::vector<std::vector<int>>& mat, const std::vector<int>& vec)
+{
+    if(mat.size()==0 || vec.size() == 0) return false;
+
+    for (auto m : mat){
+        if(m.size() == vec.size()){
+            bool bVar = true;
+            for (int i=0; i<m.size(); i++){
+                bVar = bVar && (m[i] == vec[i]);
+            }
+            if(bVar) return true;
+        }
+    }
+    return false;
+}
+
+
 double setPrecision(double ret, int digitnum)
 {
     double decimal = ret - (int)ret;

@@ -23,6 +23,9 @@ public:
 
     std::vector<std::pair<int, int>> getLinks();
 
+    /* 包含link */
+    bool contain(const std::pair<int, int>& tuple);
+
     int size() const;
 
     /* 设置planeset 中某面某个点index */
@@ -62,6 +65,17 @@ inline
 std::vector<std::pair<int, int>> Contour::getLinks()
 {
     return this->links;
+}
+
+inline
+bool Contour::contain(const std::pair<int, int>& tuple)
+{
+    for (auto link : this->links){
+        if((link.first == tuple.first && link.second == tuple.second) || (link.second == tuple.first && link.first == tuple.second)){
+            return true;
+        }
+    }
+    return false;
 }
 
 inline

@@ -28,6 +28,9 @@ bool contain_v(std::vector<int> src, std::vector<int> det);
 /* vector包含item元素 */
 bool contain_i(std::vector<int> src, int item);
 
+/*二维vector包含一维vector*/
+bool contain_vv(const std::vector<std::vector<int>>& mat, const std::vector<int>& vec);
+
 /* 去重 */
 //template <typename T>
 void doUnique(std::vector<int>& src);

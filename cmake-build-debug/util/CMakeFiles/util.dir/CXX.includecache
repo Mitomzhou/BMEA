@@ -24,13 +24,15 @@ vector
 algorithm
 -
 
-/home/mitom/Music/BMEA/util/string_util.cpp
-string_util.h
-/home/mitom/Music/BMEA/util/string_util.h
-
-/home/mitom/Music/BMEA/util/string_util.h
-string
+/home/mitom/Music/BMEA/util/mathop.cpp
+math.h
 -
+mathop.h
+/home/mitom/Music/BMEA/util/mathop.h
+defines.h
+/home/mitom/Music/BMEA/util/defines.h
+
+/home/mitom/Music/BMEA/util/mathop.h
 defines.h
 /home/mitom/Music/BMEA/util/defines.h
 

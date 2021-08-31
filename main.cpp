@@ -80,7 +80,7 @@ void run(const std::string& filename){
 }
 
 int main() {
-    const char* filename = "/home/mitom/data/obj/single-plat-result.obj";
+    const char* filename = "/home/mitom/data/test/single-plat-result.obj";
     bool rf = refineFile(filename);
     if(!rf){
         std::cout << "聚类模块错误!" << std::endl;
@@ -91,6 +91,5 @@ int main() {
     for(auto direction : direction_v){
         run(util::addtoFilename(filename, direction));
     }
-
     return 0;
 }

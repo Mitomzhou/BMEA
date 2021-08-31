@@ -22,6 +22,7 @@
 
 #include "./geometry/defines.h"
 
+/* 提取算法主体 */
 geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& pc, geometry::PlaneSet& ps);
 
 /* 合并点函数, 对于同层 */
@@ -45,11 +46,14 @@ bool containLink(geometry::Contour& contour, std::pair<int, int>& dst);
 void draw_contour(geometry::Contour& contour, geometry::PointCloud& pc);
 void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc);
 
-/* 计算偏转角 */
+/* 计算偏转角，这部分放python代码里面了 */
 double getBuildingRotation(geometry::Contour& floorContour, geometry::PointCloud& pc);
 
 /* link转换成多边形 */
 std::vector<std::vector<int>> linkConvertPolygen(geometry::Contour& contour, int findValue);
+
+/* 点是否在多边形的线上 */
+bool pointOnPolygenLine(const geometry::Point& referPoint, const std::vector<int>& polygen, const geometry::PointCloud& pc);
 
 /* 计算点是否在线上 */
 bool pointOnLine(geometry::Point point1, geometry::Point point2, geometry::Point referPoint, double thredDistance); // thredDistance=0.3
@@ -59,15 +63,17 @@ bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<i
 
 /* 计算内点 */
 std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& multlayerPolygensContour,
-                                 const geometry::PointCloud& pc, std::vector<std::pair<int,int>>& verticalMergeTuples);
+                                 const geometry::PointCloud& pc, std::vector<std::pair<int,int>>& verticalMergeTuples, std::vector<std::vector<int>>& allOnlinePolygens);
 
+/* 把多点共线拉直 */
 geometry::Contour refineLine(geometry::Contour& contour, const geometry::PointCloud& pc);
 
+/* 计算两个向量夹角 */
 double calcLineAngle(int commonPoint, int p1, int p2, const geometry::PointCloud& pc);
 
 /**
  * 提取cad的主体函数
- * @param height_v
+ * @param height_v 高度是从高到低，便于计算遮挡关系
  * @param pc
  * @param ps
  */
@@ -119,7 +125,7 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
         geometry::Contour contour = connectContour(layerps);
         // draw_contour(contour, pc);
 
-        //if(非俯视图) // TODO
+        //if(非俯视图)
         if(contour.getLinks().size() != 0){
             std::vector<std::vector<int>> polygensContour = linkConvertPolygen(contour, contour.getLinks()[0].first);
             multlayerPolygensContour.push_back(polygensContour);
@@ -139,23 +145,34 @@ geometry::Contour extract(std::vector<double>& height_v, geometry::PointCloud& p
     // 得到所有层的点替换关系
     std::vector<std::pair<int,int>> verticalMergeTuples =  util::doUnique_pairv(mergePoint(allPoints, pc, 1));
 
-    // std::cout << "所有点垂直替换关系" << verticalMergeTuples.size() << std::endl;
-    // std::cout << std::endl;
-    geometry::Contour result = replaceLinkPoint(verticalMergeTuples, allContour);
+    // 全部在线上多边形
+    std::vector<std::vector<int>> allOnlinePolygens;
 
-    // std::cout << std::endl << "最终的contour(去除内点前):" << result.size() << std::endl;
-    // result.print();
-    // std::cout << std::endl;
-    //draw_contour(result, pc);
+    // 计算内点，同时存储所有在线上的多边形到allOnlinePolygens
+    std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples, allOnlinePolygens);
 
-    // std::cout << "内点:" << std::endl;
-    std::vector<int> innerPointsIndex = calcInnerPoints(multlayerPolygensContour, pc, verticalMergeTuples);
-    // for(auto p : innerPointsIndex)  std::cout << p << ",";
-    // std::cout << std::endl;
+     // 全部在线上多边形组装到Contour
+    geometry::Contour allOnlinePolygensContour;
+    geometry::Contour allContourExOnline;
+    for (auto polygen : allOnlinePolygens){
+        for (int i=0; i<polygen.size()-1; i++){
+            allOnlinePolygensContour.addLink(std::make_pair(polygen[i], polygen[i+1]));
+        }
+    }
 
-    // 内点在result link中就去除
+    // 对所有contour去除 多边形（全部在线上的）的link关系
+    for(auto link : allContour.getLinks()){
+        if (!allOnlinePolygensContour.contain(link)){
+            allContourExOnline.addLink(link);
+        }
+    }
+
+    // 替换点（换马甲）
+    geometry::Contour replaceResultContour = replaceLinkPoint(verticalMergeTuples, allContourExOnline);
+
+    // 内点在replaceResultContour中的link中就去除
     geometry::Contour cadcontour;
-    for (auto link : result.getLinks()){
+    for (auto link : replaceResultContour.getLinks()){
         bool exist = false;
         for (auto point : innerPointsIndex){
             exist = (exist || (link.first == point || link.second == point));
@@ -222,19 +239,6 @@ std::vector<std::pair<int,int>> mergePoint(std::vector<int>& pointsIndex, geomet
             mergeResult.push_back(tuple);
         }
     }
-    // 合并点前关系
-    /**
-    std::cout << "合并点前关系： " << mergeRowList_tuple.size() << std::endl;
-    for (auto t : mergeRowList_tuple){
-        std::cout << "(" << t[0] << "," << t[1] << ")" << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "合并点后关系： " << mergeResult.size() << std::endl;
-    for (auto t : mergeResult){
-        std::cout << "(" << t.first << "," << t.second << ")" << " ";
-    }
-    std::cout << std::endl;
-     */
     return mergeResult;
 }
 
@@ -278,7 +282,11 @@ geometry::PlaneSet replaceMergePoints(std::vector<std::pair<int,int>>& mergeTupl
     return resultPs;
 }
 
-
+/**
+ * 单层给定多个面，得到Contour，其中包含去除面公共边
+ * @param layerps
+ * @return 单层轮廓线
+ */
 geometry::Contour connectContour(geometry::PlaneSet layerps)
 {
     geometry::Contour contour;
@@ -294,7 +302,6 @@ geometry::Contour connectContour(geometry::PlaneSet layerps)
         }
         contour.addLink(util::pair_sort(std::make_pair(layerps.getPointIndex(i,0), layerps.getPointIndex(i, pointsize-1)))); // 第一个点和最后一个点的link
     }
-    // contour.print();
     // 这里去重注意，对与两个面的公共边，要去除
     return removeCommonEdge(contour);
 }
@@ -423,7 +430,12 @@ void draw_contour_2l(geometry::Contour& contour, geometry::PointCloud& pc)
     cv::waitKey();
 }
 
-/* 在floor层中查找最长的轮廓线来定建筑方向 */
+/**
+ * 在floor层中查找最长的轮廓线来定建筑方向
+ * @param floorContour
+ * @param pc
+ * @return
+ */
 double getBuildingRotation(geometry::Contour& floorContour, geometry::PointCloud& pc)
 {
     // 获取最长线
@@ -448,7 +460,7 @@ double getBuildingRotation(geometry::Contour& floorContour, geometry::PointCloud
 }
 
 /**
- * 将link转为首尾相接polygen
+ * 将link转为首尾相接polygen (这里最好建一个Polygen类)
  * @param contour
  * @param findValue
  * @return
@@ -530,8 +542,36 @@ bool pointOnLine(geometry::Point point1, geometry::Point point2, geometry::Point
     return false;
 }
 
+/**
+ * 点是否在多边形线上, 阈值0.3m
+ * @param referPoint
+ * @param polygen
+ * @param pc
+ * @return
+ */
+bool pointOnPolygenLine(const geometry::Point& referPoint, const std::vector<int>& polygen, const geometry::PointCloud& pc)
+{
+    for(int i=0; i<polygen.size()-1; i++){
+        geometry::Point point1 = pc.getPointSet()[polygen[i]];
+        geometry::Point point2 = pc.getPointSet()[polygen[i+1]];
+        if(pointOnLine(point1, point2, referPoint, 0.3)){
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * 判断点是否在多边形内，用来计算遮挡关系
+ * Reference from: https://www.cnblogs.com/luxiaoxun/p/3722358.html
+ * @param referPoint
+ * @param polygen
+ * @param pc
+ * @return
+ */
 bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<int>& polygen, const geometry::PointCloud& pc)
 {
+    // 点在线上
     for(int i=0; i<polygen.size()-1; i++){
         geometry::Point point1 = pc.getPointSet()[polygen[i]];
         geometry::Point point2 = pc.getPointSet()[polygen[i+1]];
@@ -539,6 +579,7 @@ bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<i
             return false;
         }
     }
+    // 点在外或在内
     int crossing = 0;
     for(int i=0; i<polygen.size()-1; i++){
         double slope = 0;
@@ -557,7 +598,16 @@ bool polygenContainsPoint(const geometry::Point& referPoint, const std::vector<i
     return (crossing % 2 != 0);
 }
 
-std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& multlayerPolygensContour, const geometry::PointCloud& pc, std::vector<std::pair<int,int>>& verticalMergeTuples)
+/**
+ * 计算内点，顺便计算一些多边形是否全部在上层contour上，如果全部在，则后续一些关系去除
+ * @param multlayerPolygensContour 多层多个多边形
+ * @param pc
+ * @param verticalMergeTuples 垂直点替换关系
+ * @param allOnlinePolygens 全部在上层的线上的多边形
+ * @return
+ */
+std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& multlayerPolygensContour, const geometry::PointCloud& pc,
+                                 std::vector<std::pair<int,int>>& verticalMergeTuples, std::vector<std::vector<int>>& allOnlinePolygens)
 {
     std::vector<int> innerPointsIndex;
     std::vector<std::vector<int>> toplayerPolygens;
@@ -569,8 +619,28 @@ std::vector<int> calcInnerPoints(std::vector<std::vector<std::vector<int>>>& mul
             }
             for (int j=0; j<multlayerPolygensContour[i].size(); j++){ // 多个多边形
                 for (int k=0; k<multlayerPolygensContour[i][j].size(); k++){ // 单个多边形
+
+                    // 用来多边形是否在全部在线上，若多边形全部在线上，则该多边形的关系后续是要去除的
+                    std::vector<bool> onlineBoolV;
+                    bool online = true;
                     int referPointIndex = multlayerPolygensContour[i][j][k];
                     geometry::Point referPoint = pc.getPointSet()[referPointIndex];
+                    for (int c=0; c<toplayerPolygens.size(); c++) {
+                        std::vector<int> polygen;
+                        polygen = (toplayerPolygens[c]);
+                        onlineBoolV.push_back(pointOnPolygenLine(referPoint, polygen, pc));
+                    }
+                    for(auto b : onlineBoolV){
+                        online = (online && b);
+                    }
+                    if(online){
+                        if(!util::contain_vv(allOnlinePolygens, multlayerPolygensContour[i][j])){ // 同步去重了
+                            allOnlinePolygens.push_back(multlayerPolygensContour[i][j]);
+                        }
+                        continue;
+                    }
+
+                    // 判断是否在多边形内和线上
                     for (int c=0; c<toplayerPolygens.size(); c++){
                         std::vector<int> polygen;
                         polygen = (toplayerPolygens[c]);
@@ -674,7 +744,7 @@ geometry::Contour refineLine(geometry::Contour& contour, const geometry::PointCl
 }
 
 /**
- *
+ * 计算两个向量夹角
  * @param commonPoint
  * @param p1
  * @param p2
